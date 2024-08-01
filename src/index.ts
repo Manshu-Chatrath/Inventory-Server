@@ -20,22 +20,8 @@ console.log("hjere?");
 sequelize
   .sync()
   .then((res) => {
-    app.listen(4000, () => {
+    app.listen(process.env.PORT || 4000, () => {
       console.log(`Server is running on http://localhost:4000`);
-      setInterval(() => {
-        console.log("jere");
-        const memoryUsage = process.memoryUsage();
-        console.log(`RSS: ${Math.round(memoryUsage.rss / 1024 / 1024)} MB`);
-        console.log(
-          `Heap Total: ${Math.round(memoryUsage.heapTotal / 1024 / 1024)} MB`
-        );
-        console.log(
-          `Heap Used: ${Math.round(memoryUsage.heapUsed / 1024 / 1024)} MB`
-        );
-        console.log(
-          `External: ${Math.round(memoryUsage.external / 1024 / 1024)} MB`
-        );
-      }, 1000);
     });
   })
   .catch((err: any) => console.log(err));
