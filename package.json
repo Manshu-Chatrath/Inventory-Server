@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon --watch src -e ts --exec \"(tsc && node src/index.js) || exit 1\""
+    "start": "nodemon --watch src -e ts --exec \"(tsc && node --max-old-space-size=2048 src/index.js) || exit 1\""
   },
   "license": "ISC",
   "dependencies": {
