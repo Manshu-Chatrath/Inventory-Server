@@ -13,7 +13,6 @@ const router = express();
 const generateNewOtp = new GenerateOtpService().generateNewOtp;
 const validateReq = [
   body("email").isEmail().withMessage("Enter a valid email address"),
-  body("email").normalizeEmail(),
   body("password")
     .isLength({ min: 6 })
     .withMessage("Password must be at least 6 characters long")
@@ -29,6 +28,7 @@ const signUp = async (req: Request, res: Response) => {
   try {
     let errorMessage: string | null = null;
     const ModalType = Supervisors;
+    console.log(req.body.email);
     const modalParameter = await Supervisors.findOne({
       where: { email: { [Op.eq]: req.body.email } },
     });
@@ -56,17 +56,18 @@ const signUp = async (req: Request, res: Response) => {
       const password: string = await PasswordService.hashPassword(
         req.body.password
       );
+      const email = req.body.email;
       const { hashedOtp, otp } = await generateNewOtp();
 
       await ModalType.create({
         password: password,
-        email: req.body.email,
+        email: email,
         otp: hashedOtp,
         status: "pending",
       });
 
       try {
-        const sendEmail = new EmailService(req.body.email, otp.toString());
+        const sendEmail = new EmailService(email, otp.toString());
         await sendEmail.sendEmail();
         res.status(201).send({ message: "success" });
       } catch (e) {

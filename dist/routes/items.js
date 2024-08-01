@@ -22,7 +22,6 @@ const router = (0, express_1.default)();
 exports.itemRouter = router;
 router.post("/createItem", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        console.log("here?");
         const { itemName, quantity, threshold } = req.body;
         const itemExists = yield items_1.default.findOne({
             where: { name: itemName.toLowerCase() },

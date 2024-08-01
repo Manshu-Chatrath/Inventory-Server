@@ -28,7 +28,6 @@ exports.signUpRouter = router;
 const generateNewOtp = new generateNewOtp_1.GenerateOtpService().generateNewOtp;
 const validateReq = [
     (0, express_validator_1.body)("email").isEmail().withMessage("Enter a valid email address"),
-    (0, express_validator_1.body)("email").normalizeEmail(),
     (0, express_validator_1.body)("password")
         .isLength({ min: 6 })
         .withMessage("Password must be at least 6 characters long")
@@ -43,6 +42,7 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let errorMessage = null;
         const ModalType = supervisors_1.default;
+        console.log(req.body.email);
         const modalParameter = yield supervisors_1.default.findOne({
             where: { email: { [sequelize_1.Op.eq]: req.body.email } },
         });
@@ -66,15 +66,16 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         else {
             const password = yield password_1.default.hashPassword(req.body.password);
+            const email = req.body.email;
             const { hashedOtp, otp } = yield generateNewOtp();
             yield ModalType.create({
                 password: password,
-                email: req.body.email,
+                email: email,
                 otp: hashedOtp,
                 status: "pending",
             });
             try {
-                const sendEmail = new email_1.default(req.body.email, otp.toString());
+                const sendEmail = new email_1.default(email, otp.toString());
                 yield sendEmail.sendEmail();
                 res.status(201).send({ message: "success" });
             }

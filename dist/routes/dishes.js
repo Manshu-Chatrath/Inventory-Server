@@ -126,9 +126,9 @@ router.patch("/editDish", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 
             discountPercentage: +(discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discountPercentage),
             description: description,
             timeZone: discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.timeZone,
-            discount: discount,
+            discount: (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discount) ? discountDetails.discount : false,
         }, { where: { id: id }, transaction });
-        if (discount &&
+        if ((discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discount) &&
             (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discountEndTime) &&
             (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discountStartTime)) {
             queueService_1.dishQueue.add({ id: id, type: "removePromotion" }, {
@@ -192,11 +192,9 @@ router.patch("/editDish", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 
             });
             yield extraItems_1.default.bulkCreate(extraItems, { transaction });
         }
-        console.log(changedExtraCategories);
         if ((changedExtraCategories === null || changedExtraCategories === void 0 ? void 0 : changedExtraCategories.length) > 0) {
             yield Promise.all(changedExtraCategories.map((extra) => __awaiter(void 0, void 0, void 0, function* () {
                 yield extras_1.default.update({ name: extra.name, allowedItems: +extra.maxSelection, dishId: id }, { where: { id: extra.id }, transaction });
-                console.log("here?");
                 yield extraItems_1.default.destroy({
                     where: { extraId: extra.id },
                     transaction,
