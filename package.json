@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node-dev --poll src/index.ts"
+    "start": "nodemon --watch src -e ts --exec \"(tsc && node dist/index.js) || exit 1\""
   },
   "author": "",
   "license": "ISC",
@@ -26,6 +26,7 @@
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.10.2",
     "nodemailer": "^6.9.14",
+    "nodemon": "^3.1.4",
     "sequelize": "^6.37.3",
     "sequelize-cli-typescript": "^3.2.0-c",
     "sequelize-typescript": "^2.1.6",
