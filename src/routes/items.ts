@@ -8,7 +8,6 @@ import { Op } from "sequelize";
 const router = express();
 router.post("/createItem", isAuth, async (req: MyRequest, res: Response) => {
   try {
-    console.log("here?");
     const { itemName, quantity, threshold } = req.body;
     const itemExists = await Items.findOne({
       where: { name: itemName.toLowerCase() },

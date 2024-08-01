@@ -122,12 +122,12 @@ router.patch("/editDish", isAuth, async (req: MyRequest, res: Response) => {
         discountPercentage: +discountDetails?.discountPercentage,
         description: description,
         timeZone: discountDetails?.timeZone,
-        discount: discount,
+        discount: discountDetails?.discount ? discountDetails.discount : false,
       },
       { where: { id: id }, transaction }
     );
     if (
-      discount &&
+      discountDetails?.discount &&
       discountDetails?.discountEndTime &&
       discountDetails?.discountStartTime
     ) {
@@ -202,7 +202,6 @@ router.patch("/editDish", isAuth, async (req: MyRequest, res: Response) => {
       await ExtraItems.bulkCreate(extraItems, { transaction });
     }
 
-    console.log(changedExtraCategories);
     if (changedExtraCategories?.length > 0) {
       await Promise.all(
         changedExtraCategories.map(async (extra: any) => {
@@ -210,7 +209,7 @@ router.patch("/editDish", isAuth, async (req: MyRequest, res: Response) => {
             { name: extra.name, allowedItems: +extra.maxSelection, dishId: id },
             { where: { id: extra.id }, transaction }
           );
-          console.log("here?");
+
           await ExtraItems.destroy({
             where: { extraId: extra.id },
             transaction,
