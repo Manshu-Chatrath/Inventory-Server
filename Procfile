@@ -1,1 +1,1 @@
-web: ts-node-dev --poll src/index.ts
+web: npm run build && npm start
