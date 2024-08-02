@@ -368,7 +368,7 @@ router.get("/getDishes", isAuth, async (req: MyRequest, res: Response) => {
       const total = await Dishes.count({
         where: {
           name: {
-            [Op.like]: search + "%",
+            [Op.like]: "%" + search + "%",
           },
           categoryId: categoryId,
         },
@@ -377,7 +377,7 @@ router.get("/getDishes", isAuth, async (req: MyRequest, res: Response) => {
       const dishes = await Dishes.findAll({
         where: {
           name: {
-            [Op.like]: search + "%",
+            [Op.like]: "%" + search + "%",
           },
           categoryId: categoryId,
         },
@@ -390,7 +390,7 @@ router.get("/getDishes", isAuth, async (req: MyRequest, res: Response) => {
       const total = await Dishes.count({
         where: {
           name: {
-            [Op.like]: search + "%",
+            [Op.like]: "%" + search + "%",
           },
         },
       });
@@ -398,7 +398,7 @@ router.get("/getDishes", isAuth, async (req: MyRequest, res: Response) => {
       const dishes = await Dishes.findAll({
         where: {
           name: {
-            [Op.like]: search + "%",
+            [Op.like]: "%" + search + "%",
           },
         },
         include: [

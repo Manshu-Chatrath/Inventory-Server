@@ -49,14 +49,14 @@ router.get("/getItems", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 0,
         const total = yield items_1.default.count({
             where: {
                 name: {
-                    [sequelize_1.Op.like]: search + "%",
+                    [sequelize_1.Op.like]: "%" + search + "%",
                 },
             },
         });
         const items = yield items_1.default.findAll({
             where: {
                 name: {
-                    [sequelize_1.Op.like]: search + "%",
+                    [sequelize_1.Op.like]: "%" + search + "%",
                 },
             },
             offset: index,

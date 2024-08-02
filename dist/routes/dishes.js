@@ -336,7 +336,7 @@ router.get("/getDishes", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 0
             const total = yield dishes_1.default.count({
                 where: {
                     name: {
-                        [sequelize_1.Op.like]: search + "%",
+                        [sequelize_1.Op.like]: "%" + search + "%",
                     },
                     categoryId: categoryId,
                 },
@@ -344,7 +344,7 @@ router.get("/getDishes", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 0
             const dishes = yield dishes_1.default.findAll({
                 where: {
                     name: {
-                        [sequelize_1.Op.like]: search + "%",
+                        [sequelize_1.Op.like]: "%" + search + "%",
                     },
                     categoryId: categoryId,
                 },
@@ -358,14 +358,14 @@ router.get("/getDishes", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 0
             const total = yield dishes_1.default.count({
                 where: {
                     name: {
-                        [sequelize_1.Op.like]: search + "%",
+                        [sequelize_1.Op.like]: "%" + search + "%",
                     },
                 },
             });
             const dishes = yield dishes_1.default.findAll({
                 where: {
                     name: {
-                        [sequelize_1.Op.like]: search + "%",
+                        [sequelize_1.Op.like]: "%" + search + "%",
                     },
                 },
                 include: [

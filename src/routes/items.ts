@@ -38,14 +38,14 @@ router.get("/getItems", isAuth, async (req: MyRequest, res) => {
     const total = await Items.count({
       where: {
         name: {
-          [Op.like]: search + "%",
+          [Op.like]: "%" + search + "%",
         },
       },
     });
     const items: any = await Items.findAll({
       where: {
         name: {
-          [Op.like]: search + "%",
+          [Op.like]: "%" + search + "%",
         },
       },
       offset: index,
