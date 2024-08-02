@@ -46,6 +46,7 @@ const dishes_1 = __importDefault(require("../models/dishes"));
 const queueService_1 = require("../services/queueService");
 const extras_1 = __importDefault(require("../models/extras"));
 const database_1 = __importDefault(require("../database"));
+const moment_1 = __importDefault(require("moment"));
 const extraItems_1 = __importDefault(require("../models/extraItems"));
 const Items_has_dishes_1 = __importDefault(require("../models/Items_has_dishes"));
 const items_1 = __importDefault(require("../models/items"));
@@ -70,10 +71,19 @@ router.post("/createDish", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void
             discount: (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discount) ? discountDetails.discount : false,
             src: src,
         }, { transaction });
-        queueService_1.dishQueue.add({ id: dish.id, type: "removePromotion" }, {
-            delay: dish.discountEndTime - dish.discountStartTime,
-            attempts: 5,
-        });
+        if ((discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discount) &&
+            (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discountEndTime) &&
+            (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discountStartTime)) {
+            queueService_1.dishQueue.add({
+                id: dish.id,
+                type: "initiateRemoval",
+                startTime: dish.discountStartTime,
+                endTime: dish.discountEndTime,
+            }, {
+                delay: dish.discountStartTime - (0, moment_1.default)().valueOf(),
+                attempts: 5,
+            });
+        }
         const arr = extraCategories.map((item) => {
             return {
                 name: item.name,
@@ -131,8 +141,13 @@ router.patch("/editDish", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 
         if ((discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discount) &&
             (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discountEndTime) &&
             (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discountStartTime)) {
-            queueService_1.dishQueue.add({ id: id, type: "removePromotion" }, {
-                delay: discountDetails.discountEndTime - discountDetails.discountStartTime,
+            queueService_1.dishQueue.add({
+                id: id,
+                type: "initiateRemoval",
+                startTime: discountDetails.discountStartTime,
+                endTime: discountDetails.discountEndTime,
+            }, {
+                delay: discountDetails.discountStartTime - (0, moment_1.default)().valueOf(),
                 attempts: 5,
             });
         }

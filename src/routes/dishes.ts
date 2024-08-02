@@ -9,6 +9,7 @@ import Dishes from "../models/dishes";
 import { dishQueue } from "../services/queueService";
 import Extras from "../models/extras";
 import sequelize from "../database";
+import moment from "moment";
 import ExtraItems from "../models/extraItems";
 import Items_Has_Dishes from "../models/Items_has_dishes";
 import Items from "../models/items";
@@ -46,13 +47,24 @@ router.post("/createDish", isAuth, async (req: MyRequest, res: Response) => {
       },
       { transaction }
     );
-    dishQueue.add(
-      { id: dish.id, type: "removePromotion" },
-      {
-        delay: dish.discountEndTime - dish.discountStartTime,
-        attempts: 5,
-      }
-    );
+    if (
+      discountDetails?.discount &&
+      discountDetails?.discountEndTime &&
+      discountDetails?.discountStartTime
+    ) {
+      dishQueue.add(
+        {
+          id: dish.id,
+          type: "initiateRemoval",
+          startTime: dish.discountStartTime,
+          endTime: dish.discountEndTime,
+        },
+        {
+          delay: dish.discountStartTime - moment().valueOf(),
+          attempts: 5,
+        }
+      );
+    }
     const arr = extraCategories.map((item: any) => {
       return {
         name: item.name,
@@ -132,10 +144,14 @@ router.patch("/editDish", isAuth, async (req: MyRequest, res: Response) => {
       discountDetails?.discountStartTime
     ) {
       dishQueue.add(
-        { id: id, type: "removePromotion" },
         {
-          delay:
-            discountDetails.discountEndTime - discountDetails.discountStartTime,
+          id: id,
+          type: "initiateRemoval",
+          startTime: discountDetails.discountStartTime,
+          endTime: discountDetails.discountEndTime,
+        },
+        {
+          delay: discountDetails.discountStartTime - moment().valueOf(),
           attempts: 5,
         }
       );
