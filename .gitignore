@@ -1,6 +1,5 @@
 node_modules
 .env
 # TypeScript source files (not needed for deployment)
-src/
 *.ts
 *.tsx
