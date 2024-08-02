@@ -66,14 +66,9 @@ const signUp = async (req: Request, res: Response) => {
         status: "pending",
       });
 
-      try {
-        const sendEmail = new EmailService(email, otp.toString());
-        await sendEmail.sendEmail();
-        res.status(201).send({ message: "success" });
-      } catch (e) {
-        console.log(e);
-        return res.status(503).send({ message: "Please retry!" });
-      }
+      const sendEmail = new EmailService(email, otp.toString());
+      await sendEmail.sendEmail();
+      return res.status(201).send({ message: "success" });
     }
   } catch (e) {
     console.log(e);

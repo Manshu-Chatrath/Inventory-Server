@@ -74,15 +74,9 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 otp: hashedOtp,
                 status: "pending",
             });
-            try {
-                const sendEmail = new email_1.default(email, otp.toString());
-                yield sendEmail.sendEmail();
-                res.status(201).send({ message: "success" });
-            }
-            catch (e) {
-                console.log(e);
-                return res.status(503).send({ message: "Please retry!" });
-            }
+            const sendEmail = new email_1.default(email, otp.toString());
+            yield sendEmail.sendEmail();
+            return res.status(201).send({ message: "success" });
         }
     }
     catch (e) {

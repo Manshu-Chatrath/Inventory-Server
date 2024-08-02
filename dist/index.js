@@ -21,7 +21,6 @@ app.use(login_1.loginRouter);
 app.use(items_1.itemRouter);
 app.use(categories_1.categoryRouter);
 app.use(dishes_1.dishesRouter);
-console.log("hjere?");
 database_1.default
     .sync()
     .then((res) => {
