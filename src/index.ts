@@ -16,7 +16,7 @@ app.use(loginRouter);
 app.use(itemRouter);
 app.use(categoryRouter);
 app.use(dishesRouter);
-console.log("hjere?");
+
 sequelize
   .sync()
   .then((res) => {
