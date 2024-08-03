@@ -80,7 +80,7 @@ router.post("/createDish", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void
                 startTime: dish.discountStartTime,
                 endTime: dish.discountEndTime,
             }, {
-                delay: dish.discountStartTime - (0, moment_1.default)().valueOf(),
+                delay: dish.discountEndTime - (0, moment_1.default)().valueOf(),
                 attempts: 5,
             });
         }
@@ -143,11 +143,9 @@ router.patch("/editDish", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 
             (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discountStartTime)) {
             queueService_1.dishQueue.add({
                 id: id,
-                type: "initiateRemoval",
-                startTime: discountDetails.discountStartTime,
-                endTime: discountDetails.discountEndTime,
+                type: "removePromotion",
             }, {
-                delay: discountDetails.discountStartTime - (0, moment_1.default)().valueOf(),
+                delay: discountDetails.discountEndTime - (0, moment_1.default)().valueOf(),
                 attempts: 5,
             });
         }

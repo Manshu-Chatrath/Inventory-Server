@@ -60,7 +60,7 @@ router.post("/createDish", isAuth, async (req: MyRequest, res: Response) => {
           endTime: dish.discountEndTime,
         },
         {
-          delay: dish.discountStartTime - moment().valueOf(),
+          delay: dish.discountEndTime - moment().valueOf(),
           attempts: 5,
         }
       );
@@ -146,12 +146,10 @@ router.patch("/editDish", isAuth, async (req: MyRequest, res: Response) => {
       dishQueue.add(
         {
           id: id,
-          type: "initiateRemoval",
-          startTime: discountDetails.discountStartTime,
-          endTime: discountDetails.discountEndTime,
+          type: "removePromotion",
         },
         {
-          delay: discountDetails.discountStartTime - moment().valueOf(),
+          delay: discountDetails.discountEndTime - moment().valueOf(),
           attempts: 5,
         }
       );
