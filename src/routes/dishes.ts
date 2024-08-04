@@ -372,6 +372,17 @@ router.delete("/dish/:id", isAuth, async (req: MyRequest, res: Response) => {
   }
 });
 
+const mapDishes = (dishes: any) => {
+  const allDishes = dishes.map((dish: any) => {
+    const dishPlainObject = dish.get({ plain: true });
+    const lowIngeredients =
+      dishPlainObject?.items?.some((i: any) => i.quantity < i.threshold) ??
+      false;
+    return { ...dishPlainObject, lowIngeredients };
+  });
+  return allDishes;
+};
+
 router.get("/getDishes", isAuth, async (req: MyRequest, res: Response) => {
   const index = Number(req.query.index) || 0;
   const count = Number(req.query.count) || 10;
@@ -394,7 +405,7 @@ router.get("/getDishes", isAuth, async (req: MyRequest, res: Response) => {
             [Op.like]: "%" + search + "%",
           },
           categoryId: categoryId,
-        },  
+        },
         include: [
           {
             model: Items,
@@ -405,7 +416,8 @@ router.get("/getDishes", isAuth, async (req: MyRequest, res: Response) => {
         limit: count,
         order: [["name", "ASC"]],
       });
-      return res.status(200).send({ dishes: dishes, total: total });
+      const allDishes = mapDishes(dishes);
+      return res.status(200).send({ dishes: allDishes, total: total });
     } else {
       const total = await Dishes.count({
         where: {
@@ -432,13 +444,7 @@ router.get("/getDishes", isAuth, async (req: MyRequest, res: Response) => {
         order: [["name", "ASC"]],
       });
 
-      const allDishes = dishes.map((dish: any) => {
-        const dishPlainObject = dish.get({ plain: true });
-        const lowIngeredients =
-          dishPlainObject?.items?.some((i: any) => i.quantity < i.threshold) ??
-          false;
-        return { ...dishPlainObject, lowIngeredients };
-      });
+      const allDishes = mapDishes(dishes);
       return res.status(200).send({ dishes: allDishes, total: total });
     }
   } catch (e) {

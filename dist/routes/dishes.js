@@ -338,6 +338,15 @@ router.delete("/dish/:id", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void
         (0, dataBaseError_1.dataBaseConnectionError)(res);
     }
 }));
+const mapDishes = (dishes) => {
+    const allDishes = dishes.map((dish) => {
+        var _a, _b;
+        const dishPlainObject = dish.get({ plain: true });
+        const lowIngeredients = (_b = (_a = dishPlainObject === null || dishPlainObject === void 0 ? void 0 : dishPlainObject.items) === null || _a === void 0 ? void 0 : _a.some((i) => i.quantity < i.threshold)) !== null && _b !== void 0 ? _b : false;
+        return Object.assign(Object.assign({}, dishPlainObject), { lowIngeredients });
+    });
+    return allDishes;
+};
 router.get("/getDishes", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const index = Number(req.query.index) || 0;
@@ -371,7 +380,8 @@ router.get("/getDishes", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 0
                 limit: count,
                 order: [["name", "ASC"]],
             });
-            return res.status(200).send({ dishes: dishes, total: total });
+            const allDishes = mapDishes(dishes);
+            return res.status(200).send({ dishes: allDishes, total: total });
         }
         else {
             const total = yield dishes_1.default.count({
@@ -397,12 +407,7 @@ router.get("/getDishes", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 0
                 limit: count,
                 order: [["name", "ASC"]],
             });
-            const allDishes = dishes.map((dish) => {
-                var _a, _b;
-                const dishPlainObject = dish.get({ plain: true });
-                const lowIngeredients = (_b = (_a = dishPlainObject === null || dishPlainObject === void 0 ? void 0 : dishPlainObject.items) === null || _a === void 0 ? void 0 : _a.some((i) => i.quantity < i.threshold)) !== null && _b !== void 0 ? _b : false;
-                return Object.assign(Object.assign({}, dishPlainObject), { lowIngeredients });
-            });
+            const allDishes = mapDishes(dishes);
             return res.status(200).send({ dishes: allDishes, total: total });
         }
     }
