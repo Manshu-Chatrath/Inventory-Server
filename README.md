@@ -13,6 +13,10 @@ MYSQL_USER
 REDIS_URL
 SECRET_KEY
 
+## Requirements
+
+- **Node.js**: Version 16.0.0 or higher
+
 ## Features
 
 - **User Authentication**: Register and login users with JWT-based authentication.
