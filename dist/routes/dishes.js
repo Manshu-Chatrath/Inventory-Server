@@ -361,6 +361,12 @@ router.get("/getDishes", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 0
                     },
                     categoryId: categoryId,
                 },
+                include: [
+                    {
+                        model: items_1.default,
+                        as: "items",
+                    },
+                ],
                 offset: index,
                 limit: count,
                 order: [["name", "ASC"]],
