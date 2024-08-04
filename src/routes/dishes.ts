@@ -394,7 +394,13 @@ router.get("/getDishes", isAuth, async (req: MyRequest, res: Response) => {
             [Op.like]: "%" + search + "%",
           },
           categoryId: categoryId,
-        },
+        },  
+        include: [
+          {
+            model: Items,
+            as: "items",
+          },
+        ],
         offset: index,
         limit: count,
         order: [["name", "ASC"]],
