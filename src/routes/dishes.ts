@@ -7,6 +7,8 @@ import { v1 as uuid } from "uuid";
 import { Op } from "sequelize";
 import Dishes from "../models/dishes";
 import { dishQueue } from "../services/queueService";
+import dotenv from "dotenv";
+import Bull from "bull";
 import Extras from "../models/extras";
 import sequelize from "../database";
 import moment from "moment";
@@ -14,6 +16,26 @@ import ExtraItems from "../models/extraItems";
 import Items_Has_Dishes from "../models/Items_has_dishes";
 import Items from "../models/items";
 const router = express();
+dotenv.config();
+
+dishQueue.process(async (job: any) => {
+  const { id, type } = job.data;
+  console.log(job.data);
+  try {
+    console.log("here");
+    if (type === "removePromotion") {
+      console.log("So id is ", id);
+      await Dishes.update({ discount: false }, { where: { id: id } });
+    }
+  } catch (e: any) {
+    console.error(e);
+  }
+});
+
+dishQueue.on("failed", async (job: any, err: any) => {
+  console.log(err);
+  await job.retry();
+});
 router.post("/createDish", isAuth, async (req: MyRequest, res: Response) => {
   const transaction = await sequelize.transaction();
   try {
@@ -49,18 +71,16 @@ router.post("/createDish", isAuth, async (req: MyRequest, res: Response) => {
     );
     if (
       discountDetails?.discount &&
-      discountDetails?.startDiscountDate &&
-      discountDetails?.endDiscountDate
+      discountDetails?.startDiscountTime &&
+      discountDetails?.endDiscountTime
     ) {
       dishQueue.add(
         {
           id: dish.id,
-          type: "initiateRemoval",
-          startTime: dish.discountStartTime,
-          endTime: dish.discountEndTime,
+          type: "removePromotion",
         },
         {
-          delay: dish.discountEndTime - moment().valueOf(),
+          delay: dish.endDiscountTime - moment().valueOf(),
           attempts: 5,
         }
       );
@@ -110,7 +130,6 @@ router.patch("/editDish", isAuth, async (req: MyRequest, res: Response) => {
       id,
       price = 0,
       status,
-      discount,
       discountDetails,
       description = "",
       addedSelectedItems,
