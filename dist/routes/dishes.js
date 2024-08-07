@@ -55,11 +55,9 @@ const router = (0, express_1.default)();
 exports.dishesRouter = router;
 dotenv_1.default.config();
 queueService_1.dishQueue.process((job) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id, type } = job.data;
+    const { id } = job.data;
     try {
-        if (type === "removePromotion") {
-            yield dishes_1.default.update({ discount: false }, { where: { id: id } });
-        }
+        yield dishes_1.default.update({ discount: false }, { where: { id: id } });
     }
     catch (e) {
         console.error(e);
@@ -89,15 +87,12 @@ router.post("/createDish", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void
             src: src,
         }, { transaction });
         if ((discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discount) &&
-            (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.startDiscountDate) &&
-            (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.endDiscountDate)) {
+            (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.startDiscountTime) &&
+            (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.endDiscountTime)) {
             queueService_1.dishQueue.add({
                 id: dish.id,
-                type: "initiateRemoval",
-                startTime: dish.discountStartTime,
-                endTime: dish.discountEndTime,
             }, {
-                delay: dish.discountEndTime - (0, moment_1.default)().valueOf(),
+                delay: dish.endDiscountTime - (0, moment_1.default)().valueOf(),
                 attempts: 5,
             });
         }
@@ -140,7 +135,7 @@ router.post("/createDish", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void
 router.patch("/editDish", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const transaction = yield database_1.default.transaction();
     try {
-        const { itemName, id, price = 0, status, discount, discountDetails, description = "", addedSelectedItems, selectedCategory, removeExtraCategories, removedSelectedItems, changedExtraCategories, extraCategories, } = req.body;
+        const { itemName, id, price = 0, status, discountDetails, description = "", addedSelectedItems, selectedCategory, removeExtraCategories, removedSelectedItems, changedExtraCategories, extraCategories, } = req.body;
         yield dishes_1.default.update({
             name: itemName,
             categoryId: selectedCategory.id,
@@ -158,12 +153,10 @@ router.patch("/editDish", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 
         if ((discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discount) &&
             (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.startDiscountTime) &&
             (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.endDiscountTime)) {
-            console.log("here");
             queueService_1.dishQueue.add({
                 id: id,
-                type: "removePromotion",
             }, {
-                delay: 1000,
+                delay: discountDetails.endDiscountTime - (0, moment_1.default)().valueOf(),
                 attempts: 5,
             });
         }

@@ -8,7 +8,7 @@ import { Op } from "sequelize";
 import Dishes from "../models/dishes";
 import { dishQueue } from "../services/queueService";
 import dotenv from "dotenv";
-import Bull from "bull";
+
 import Extras from "../models/extras";
 import sequelize from "../database";
 import moment from "moment";
@@ -19,14 +19,9 @@ const router = express();
 dotenv.config();
 
 dishQueue.process(async (job: any) => {
-  const { id, type } = job.data;
-  console.log(job.data);
+  const { id } = job.data;
   try {
-    console.log("here");
-    if (type === "removePromotion") {
-      console.log("So id is ", id);
-      await Dishes.update({ discount: false }, { where: { id: id } });
-    }
+    await Dishes.update({ discount: false }, { where: { id: id } });
   } catch (e: any) {
     console.error(e);
   }
@@ -77,7 +72,6 @@ router.post("/createDish", isAuth, async (req: MyRequest, res: Response) => {
       dishQueue.add(
         {
           id: dish.id,
-          type: "removePromotion",
         },
         {
           delay: dish.endDiscountTime - moment().valueOf(),
@@ -166,7 +160,6 @@ router.patch("/editDish", isAuth, async (req: MyRequest, res: Response) => {
       dishQueue.add(
         {
           id: id,
-          type: "removePromotion",
         },
         {
           delay: discountDetails.endDiscountTime - moment().valueOf(),
