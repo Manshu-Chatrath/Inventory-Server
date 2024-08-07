@@ -1,17 +1,17 @@
 This project is the backend of an inventory management system designed for restaurants, built using Node.js, Express, and Sequelize. It provides RESTful APIs for managing inventory, user authentication, and other related functionalities.
 
-## .env examle
+## .env variables you need
 
-AWS_ACCESS_KEY
-AWS_SECRET_ACCESS_KEY
-EMAIL_PASSWORD
-MYSQL_DATABASE
-MYSQL_HOST
-MYSQL_PASSWORD
-MYSQL_PORT
-MYSQL_USER
-REDIS_URL
-SECRET_KEY
+- AWS_ACCESS_KEY
+- AWS_SECRET_ACCESS_KEY
+- EMAIL_PASSWORD
+- MYSQL_DATABASE
+- MYSQL_HOST
+- MYSQL_PASSWORD
+- MYSQL_PORT
+- MYSQL_USER
+- REDIS_URL
+- SECRET_KEY
 
 ## Requirements
 
