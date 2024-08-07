@@ -72,8 +72,8 @@ router.post("/createDish", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void
             src: src,
         }, { transaction });
         if ((discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discount) &&
-            (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discountEndTime) &&
-            (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discountStartTime)) {
+            (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.startDiscountDate) &&
+            (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.endDiscountDate)) {
             queueService_1.dishQueue.add({
                 id: dish.id,
                 type: "initiateRemoval",
@@ -139,13 +139,13 @@ router.patch("/editDish", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 
             discount: (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discount) ? discountDetails.discount : false,
         }, { where: { id: id }, transaction });
         if ((discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discount) &&
-            (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discountEndTime) &&
-            (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discountStartTime)) {
+            (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.startDiscountTime) &&
+            (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.endDiscountTime)) {
             queueService_1.dishQueue.add({
                 id: id,
                 type: "removePromotion",
             }, {
-                delay: discountDetails.discountEndTime - (0, moment_1.default)().valueOf(),
+                delay: discountDetails.endDiscountTime - (0, moment_1.default)().valueOf(),
                 attempts: 5,
             });
         }

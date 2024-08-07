@@ -49,8 +49,8 @@ router.post("/createDish", isAuth, async (req: MyRequest, res: Response) => {
     );
     if (
       discountDetails?.discount &&
-      discountDetails?.discountEndTime &&
-      discountDetails?.discountStartTime
+      discountDetails?.startDiscountDate &&
+      discountDetails?.endDiscountDate
     ) {
       dishQueue.add(
         {
@@ -138,10 +138,11 @@ router.patch("/editDish", isAuth, async (req: MyRequest, res: Response) => {
       },
       { where: { id: id }, transaction }
     );
+
     if (
       discountDetails?.discount &&
-      discountDetails?.discountEndTime &&
-      discountDetails?.discountStartTime
+      discountDetails?.startDiscountTime &&
+      discountDetails?.endDiscountTime
     ) {
       dishQueue.add(
         {
@@ -149,7 +150,7 @@ router.patch("/editDish", isAuth, async (req: MyRequest, res: Response) => {
           type: "removePromotion",
         },
         {
-          delay: discountDetails.discountEndTime - moment().valueOf(),
+          delay: discountDetails.endDiscountTime - moment().valueOf(),
           attempts: 5,
         }
       );
