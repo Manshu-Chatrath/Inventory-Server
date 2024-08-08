@@ -7,8 +7,8 @@ exports.dishQueue = void 0;
 const bull_1 = __importDefault(require("bull"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-console.log(process.env.REDIS_URL);
-exports.dishQueue = new bull_1.default("dishQueue", process.env.REDIS_URL, {
+const redisUrl = process.env.REDIS_TLS_URL || process.env.REDIS_URL;
+exports.dishQueue = new bull_1.default("dishQueue", redisUrl, {
     redis: {
         maxRetriesPerRequest: 5, // Increase retry limit
         retryStrategy: (times) => {
