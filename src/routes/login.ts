@@ -11,7 +11,6 @@ const router = express();
 const jwt = require("jsonwebtoken");
 const generateNewOtp = new GenerateOtpService().generateNewOtp;
 export const generateTokens = (model: SuperVisorAttrs) => {
-  console.log("Here we are ", process.env.SECRET_KEY);
   const accessToken = jwt.sign(
     { email: model.email, id: model!.id },
     process.env.SECRET_KEY,

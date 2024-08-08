@@ -6,38 +6,13 @@ import { MyRequest } from "../middlewares/isAuth";
 import { v1 as uuid } from "uuid";
 import { Op } from "sequelize";
 import Dishes from "../models/dishes";
-import { dishQueue } from "../services/queueService";
-import dotenv from "dotenv";
-
 import Extras from "../models/extras";
 import sequelize from "../database";
-import moment from "moment";
 import ExtraItems from "../models/extraItems";
 import Items_Has_Dishes from "../models/Items_has_dishes";
 import Items from "../models/items";
 const router = express();
-dotenv.config();
 
-dishQueue.process(async (job: any) => {
-  const { id } = job.data;
-  console.log("Queue should be triggered ", id);
-  try {
-    await Dishes.update({ discount: false }, { where: { id: id } });
-  } catch (e: any) {
-    console.error(e);
-  }
-});
-
-dishQueue.on("failed", async (job: any, err: any) => {
-  console.log("Job failed", job.id);
-  console.log(err);
-  await job.retry();
-});
-
-console.log(`Initializing dishQueue with Redis URL: ${process.env.REDIS_URL}`);
-if (!process.env.REDIS_URL) {
-  console.error("REDIS_URL environment variable is not set.");
-}
 router.post("/createDish", isAuth, async (req: MyRequest, res: Response) => {
   const transaction = await sequelize.transaction();
   try {
@@ -71,21 +46,7 @@ router.post("/createDish", isAuth, async (req: MyRequest, res: Response) => {
       },
       { transaction }
     );
-    if (
-      discountDetails?.discount &&
-      discountDetails?.startDiscountTime &&
-      discountDetails?.endDiscountTime
-    ) {
-      dishQueue.add(
-        {
-          id: dish.id,
-        },
-        {
-          delay: dish.endDiscountTime - moment().valueOf(),
-          attempts: 5,
-        }
-      );
-    }
+
     const arr = extraCategories.map((item: any) => {
       return {
         name: item.name,
@@ -159,23 +120,6 @@ router.patch("/editDish", isAuth, async (req: MyRequest, res: Response) => {
       { where: { id: id }, transaction }
     );
 
-    if (
-      discountDetails?.discount &&
-      discountDetails?.startDiscountTime &&
-      discountDetails?.endDiscountTime
-    ) {
-      console.log(discountDetails.endDiscountTime - moment().valueOf());
-      console.log("This should added in the queue");
-      dishQueue.add(
-        {
-          id: id,
-        },
-        {
-          delay: discountDetails.endDiscountTime - moment().valueOf(),
-          attempts: 5,
-        }
-      );
-    }
     if (removedSelectedItems?.length > 0) {
       await Items_Has_Dishes.destroy({
         where: {
@@ -213,7 +157,7 @@ router.patch("/editDish", isAuth, async (req: MyRequest, res: Response) => {
     const addedExtraCategories = extraCategories.filter(
       (item: any) => !item.id
     );
-    console.log(addedExtraCategories);
+
     if (addedExtraCategories?.length > 0) {
       const arr = addedExtraCategories.map((item: any) => {
         return {

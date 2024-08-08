@@ -43,36 +43,13 @@ const AWS = __importStar(require("aws-sdk"));
 const uuid_1 = require("uuid");
 const sequelize_1 = require("sequelize");
 const dishes_1 = __importDefault(require("../models/dishes"));
-const queueService_1 = require("../services/queueService");
-const dotenv_1 = __importDefault(require("dotenv"));
 const extras_1 = __importDefault(require("../models/extras"));
 const database_1 = __importDefault(require("../database"));
-const moment_1 = __importDefault(require("moment"));
 const extraItems_1 = __importDefault(require("../models/extraItems"));
 const Items_has_dishes_1 = __importDefault(require("../models/Items_has_dishes"));
 const items_1 = __importDefault(require("../models/items"));
 const router = (0, express_1.default)();
 exports.dishesRouter = router;
-dotenv_1.default.config();
-queueService_1.dishQueue.process((job) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = job.data;
-    console.log("Queue should be triggered ", id);
-    try {
-        yield dishes_1.default.update({ discount: false }, { where: { id: id } });
-    }
-    catch (e) {
-        console.error(e);
-    }
-}));
-queueService_1.dishQueue.on("failed", (job, err) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("Job failed", job.id);
-    console.log(err);
-    yield job.retry();
-}));
-console.log(`Initializing dishQueue with Redis URL: ${process.env.REDIS_URL}`);
-if (!process.env.REDIS_URL) {
-    console.error("REDIS_URL environment variable is not set.");
-}
 router.post("/createDish", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const transaction = yield database_1.default.transaction();
     try {
@@ -92,16 +69,6 @@ router.post("/createDish", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void
             discount: (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discount) ? discountDetails.discount : false,
             src: src,
         }, { transaction });
-        if ((discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discount) &&
-            (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.startDiscountTime) &&
-            (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.endDiscountTime)) {
-            queueService_1.dishQueue.add({
-                id: dish.id,
-            }, {
-                delay: dish.endDiscountTime - (0, moment_1.default)().valueOf(),
-                attempts: 5,
-            });
-        }
         const arr = extraCategories.map((item) => {
             return {
                 name: item.name,
@@ -156,18 +123,6 @@ router.patch("/editDish", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 
             timeZone: discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.timeZone,
             discount: (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discount) ? discountDetails.discount : false,
         }, { where: { id: id }, transaction });
-        if ((discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discount) &&
-            (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.startDiscountTime) &&
-            (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.endDiscountTime)) {
-            console.log(discountDetails.endDiscountTime - (0, moment_1.default)().valueOf());
-            console.log("This should added in the queue");
-            queueService_1.dishQueue.add({
-                id: id,
-            }, {
-                delay: discountDetails.endDiscountTime - (0, moment_1.default)().valueOf(),
-                attempts: 5,
-            });
-        }
         if ((removedSelectedItems === null || removedSelectedItems === void 0 ? void 0 : removedSelectedItems.length) > 0) {
             yield Items_has_dishes_1.default.destroy({
                 where: {
@@ -200,7 +155,6 @@ router.patch("/editDish", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 
             });
         }
         const addedExtraCategories = extraCategories.filter((item) => !item.id);
-        console.log(addedExtraCategories);
         if ((addedExtraCategories === null || addedExtraCategories === void 0 ? void 0 : addedExtraCategories.length) > 0) {
             const arr = addedExtraCategories.map((item) => {
                 return {

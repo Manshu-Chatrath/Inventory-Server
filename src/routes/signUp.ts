@@ -28,7 +28,7 @@ const signUp = async (req: Request, res: Response) => {
   try {
     let errorMessage: string | null = null;
     const ModalType = Supervisors;
-    console.log(req.body.email);
+
     const modalParameter = await Supervisors.findOne({
       where: { email: { [Op.eq]: req.body.email } },
     });

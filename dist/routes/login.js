@@ -27,7 +27,6 @@ exports.loginRouter = router;
 const jwt = require("jsonwebtoken");
 const generateNewOtp = new generateNewOtp_1.GenerateOtpService().generateNewOtp;
 const generateTokens = (model) => {
-    console.log("Here we are ", process.env.SECRET_KEY);
     const accessToken = jwt.sign({ email: model.email, id: model.id }, process.env.SECRET_KEY, { expiresIn: "2h" });
     return { accessToken };
 };

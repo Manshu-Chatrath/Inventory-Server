@@ -42,7 +42,6 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let errorMessage = null;
         const ModalType = supervisors_1.default;
-        console.log(req.body.email);
         const modalParameter = yield supervisors_1.default.findOne({
             where: { email: { [sequelize_1.Op.eq]: req.body.email } },
         });
