@@ -20,6 +20,7 @@ dotenv.config();
 
 dishQueue.process(async (job: any) => {
   const { id } = job.data;
+  console.log("Queue should be triggered ", id);
   try {
     await Dishes.update({ discount: false }, { where: { id: id } });
   } catch (e: any) {
@@ -157,6 +158,8 @@ router.patch("/editDish", isAuth, async (req: MyRequest, res: Response) => {
       discountDetails?.startDiscountTime &&
       discountDetails?.endDiscountTime
     ) {
+      console.log(discountDetails.endDiscountTime - moment().valueOf());
+      console.log("This should added in the queue");
       dishQueue.add(
         {
           id: id,

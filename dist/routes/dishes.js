@@ -56,6 +56,7 @@ exports.dishesRouter = router;
 dotenv_1.default.config();
 queueService_1.dishQueue.process((job) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = job.data;
+    console.log("Queue should be triggered ", id);
     try {
         yield dishes_1.default.update({ discount: false }, { where: { id: id } });
     }
@@ -153,6 +154,8 @@ router.patch("/editDish", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 
         if ((discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.discount) &&
             (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.startDiscountTime) &&
             (discountDetails === null || discountDetails === void 0 ? void 0 : discountDetails.endDiscountTime)) {
+            console.log(discountDetails.endDiscountTime - (0, moment_1.default)().valueOf());
+            console.log("This should added in the queue");
             queueService_1.dishQueue.add({
                 id: id,
             }, {

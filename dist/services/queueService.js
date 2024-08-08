@@ -7,5 +7,5 @@ exports.dishQueue = void 0;
 const bull_1 = __importDefault(require("bull"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-const { REDIS_URL = "" } = process.env;
-exports.dishQueue = new bull_1.default("dishQueue", REDIS_URL);
+console.log(process.env.REDIS_URL);
+exports.dishQueue = new bull_1.default("dishQueue", process.env.REDIS_URL);
