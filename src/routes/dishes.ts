@@ -29,9 +29,15 @@ dishQueue.process(async (job: any) => {
 });
 
 dishQueue.on("failed", async (job: any, err: any) => {
+  console.log("Job failed", job.id);
   console.log(err);
   await job.retry();
 });
+
+console.log(`Initializing dishQueue with Redis URL: ${process.env.REDIS_URL}`);
+if (!process.env.REDIS_URL) {
+  console.error("REDIS_URL environment variable is not set.");
+}
 router.post("/createDish", isAuth, async (req: MyRequest, res: Response) => {
   const transaction = await sequelize.transaction();
   try {

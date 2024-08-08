@@ -65,9 +65,14 @@ queueService_1.dishQueue.process((job) => __awaiter(void 0, void 0, void 0, func
     }
 }));
 queueService_1.dishQueue.on("failed", (job, err) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("Job failed", job.id);
     console.log(err);
     yield job.retry();
 }));
+console.log(`Initializing dishQueue with Redis URL: ${process.env.REDIS_URL}`);
+if (!process.env.REDIS_URL) {
+    console.error("REDIS_URL environment variable is not set.");
+}
 router.post("/createDish", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const transaction = yield database_1.default.transaction();
     try {
