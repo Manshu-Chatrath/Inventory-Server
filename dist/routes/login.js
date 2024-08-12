@@ -19,6 +19,7 @@ const email_1 = __importDefault(require("../services/email"));
 const dataBaseError_1 = require("../util/dataBaseError");
 const generateNewOtp_1 = require("../services/generateNewOtp");
 const password_1 = __importDefault(require("../services/password"));
+const isAuth_1 = require("../middlewares/isAuth");
 const supervisors_1 = __importDefault(require("../models/supervisors"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
@@ -27,7 +28,7 @@ exports.loginRouter = router;
 const jwt = require("jsonwebtoken");
 const generateNewOtp = new generateNewOtp_1.GenerateOtpService().generateNewOtp;
 const generateTokens = (model) => {
-    const accessToken = jwt.sign({ email: model.email, id: model.id }, process.env.SECRET_KEY, { expiresIn: "2h" });
+    const accessToken = jwt.sign({ email: model.email, id: model.id }, process.env.SECRET_KEY, { expiresIn: "1h" });
     return { accessToken };
 };
 exports.generateTokens = generateTokens;
@@ -70,6 +71,8 @@ router.post("/login", (req, res) => __awaiter(void 0, void 0, void 0, function* 
             return res.status(401).json({ message: "Invalid credentials" });
         }
         const token = (0, exports.generateTokens)(user);
+        req.session.userId = user.id;
+        console.log(req.session.userId);
         return res.status(200).json({
             message: "Successful",
             token,
@@ -161,4 +164,12 @@ router.post("/verifyOtp", (req, res) => __awaiter(void 0, void 0, void 0, functi
         console.log(e);
         (0, dataBaseError_1.dataBaseConnectionError)(res);
     }
+}));
+router.post("/logout", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).send({ message: "Internal Server Error" });
+        }
+        return res.status(200).send({ message: "Logged out successfully" });
+    });
 }));

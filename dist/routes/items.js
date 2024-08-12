@@ -90,7 +90,6 @@ router.patch("/items", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 0, 
             quantity: +req.body.quantity, //+ is used to convert string to number
             threshold: +req.body.threshold, //+ is used to convert string to number
         }, { where: { id: req.body.id } });
-        console.log("here");
         return res.status(200).json({ message: "Success" });
     }
     catch (e) {

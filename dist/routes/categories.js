@@ -55,7 +55,6 @@ router.delete("/category/:id", isAuth_1.isAuth, (req, res) => __awaiter(void 0, 
 router.patch("/category", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         yield categories_1.default.update({ name: req.body.category.toLowerCase() }, { where: { id: req.body.id } });
-        console.log("here");
         return res.status(200).json({ message: "Success" });
     }
     catch (e) {
@@ -63,7 +62,7 @@ router.patch("/category", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 
         (0, dataBaseError_1.dataBaseConnectionError)(res);
     }
 }));
-router.get("/categories", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/categories", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const categories = yield categories_1.default.findAll({
             include: [

@@ -12,7 +12,6 @@ import ExtraItems from "../models/extraItems";
 import Items_Has_Dishes from "../models/Items_has_dishes";
 import Items from "../models/items";
 const router = express();
-
 router.post("/createDish", isAuth, async (req: MyRequest, res: Response) => {
   const transaction = await sequelize.transaction();
   try {
@@ -286,7 +285,7 @@ router.post("/image/upload", isAuth, async (req: MyRequest, res: Response) => {
   }
 });
 
-router.get("/getDish/:id", isAuth, async (req: MyRequest, res: Response) => {
+router.get("/getDish/:id", async (req: MyRequest, res: Response) => {
   const { id } = req.params;
   try {
     const dish = await Dishes.findOne({
@@ -349,7 +348,7 @@ const mapDishes = (dishes: any) => {
   return allDishes;
 };
 
-router.get("/getDishes", isAuth, async (req: MyRequest, res: Response) => {
+router.get("/getDishes", async (req: MyRequest, res: Response) => {
   const index = Number(req.query.index) || 0;
   const count = Number(req.query.count) || 10;
   const search = req.query.search || "";

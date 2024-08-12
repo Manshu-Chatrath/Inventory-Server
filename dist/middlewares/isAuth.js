@@ -13,30 +13,30 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isAuth = void 0;
-const supervisors_1 = __importDefault(require("../models/supervisors"));
-const jwt = require("jsonwebtoken");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const isAuth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     let auth = req.get("Authorization");
+    if (!auth) {
+        return res.status(401).send({ message: "Authorization header missing" });
+    }
     const token = auth;
     let decoded;
     try {
-        decoded = jwt.verify(token, process.env.SECRET_KEY);
-        let isValidUser = false;
+        decoded = jsonwebtoken_1.default.verify(token, process.env.SECRET_KEY);
         if (decoded) {
             const { id } = decoded;
-            if (req === null || req === void 0 ? void 0 : req.isValidUser) {
+            if (req.session && req.session.userId === id) {
+                req.userId = req.session.userId;
                 return next();
             }
-            if (!isValidUser) {
-                isValidUser = yield supervisors_1.default.findOne({ where: { id: id } });
-            }
-            if (isValidUser) {
-                req.isValidUser = true;
-                req.userId = id;
-                next();
-            }
             else {
-                return res.status(401).send({ message: "Invalid token" });
+                (_a = req === null || req === void 0 ? void 0 : req.session) === null || _a === void 0 ? void 0 : _a.destroy((err) => {
+                    if (err) {
+                        console.log("Error destroying session:", err);
+                    }
+                    return res.status(401).send({ message: "Invalid token" });
+                });
             }
         }
     }

@@ -4,6 +4,7 @@ import EmailService from "../services/email";
 import { dataBaseConnectionError } from "../util/dataBaseError";
 import { GenerateOtpService } from "../services/generateNewOtp";
 import PasswordService from "../services/password";
+import { isAuth } from "../middlewares/isAuth";
 import Supervisors, { SuperVisorAttrs } from "../models/supervisors";
 import dotenv from "dotenv";
 dotenv.config();
@@ -14,7 +15,7 @@ export const generateTokens = (model: SuperVisorAttrs) => {
   const accessToken = jwt.sign(
     { email: model.email, id: model!.id },
     process.env.SECRET_KEY,
-    { expiresIn: "2h" }
+    { expiresIn: "1h" }
   );
 
   return { accessToken };
@@ -69,6 +70,8 @@ router.post("/login", async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
     const token = generateTokens(user);
+    req.session.userId = user.id;
+    console.log(req.session.userId);
     return res.status(200).json({
       message: "Successful",
       token,
@@ -172,6 +175,15 @@ router.post("/verifyOtp", async (req: Request, res: Response) => {
     console.log(e);
     dataBaseConnectionError(res);
   }
+});
+
+router.post("/logout", isAuth, async (req: Request, res: Response) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).send({ message: "Internal Server Error" });
+    }
+    return res.status(200).send({ message: "Logged out successfully" });
+  });
 });
 
 export { router as loginRouter };

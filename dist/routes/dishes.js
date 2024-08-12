@@ -262,7 +262,7 @@ router.post("/image/upload", isAuth_1.isAuth, (req, res) => __awaiter(void 0, vo
         (0, dataBaseError_1.dataBaseConnectionError)(res);
     }
 }));
-router.get("/getDish/:id", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/getDish/:id", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     try {
         const dish = yield dishes_1.default.findOne({
@@ -320,7 +320,7 @@ const mapDishes = (dishes) => {
     });
     return allDishes;
 };
-router.get("/getDishes", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/getDishes", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     const index = Number(req.query.index) || 0;
     const count = Number(req.query.count) || 10;

@@ -54,7 +54,6 @@ router.patch("/category", isAuth, async (req: MyRequest, res: Response) => {
       { name: req.body.category.toLowerCase() },
       { where: { id: req.body.id } }
     );
-    console.log("here");
     return res.status(200).json({ message: "Success" });
   } catch (e) {
     console.log(e);
@@ -62,7 +61,7 @@ router.patch("/category", isAuth, async (req: MyRequest, res: Response) => {
   }
 });
 
-router.get("/categories", isAuth, async (req: MyRequest, res: Response) => {
+router.get("/categories", async (req: MyRequest, res: Response) => {
   try {
     const categories = await Categories.findAll({
       include: [

@@ -8,7 +8,6 @@ import { GenerateOtpService } from "../services/generateNewOtp";
 import { dataBaseConnectionError } from "../util/dataBaseError";
 import EmailService from "../services/email";
 import { Op } from "sequelize";
-
 const router = express();
 const generateNewOtp = new GenerateOtpService().generateNewOtp;
 const validateReq = [
