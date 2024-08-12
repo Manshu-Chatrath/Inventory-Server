@@ -28,6 +28,7 @@ app.use(
     secret: process.env.SECRET_KEY!,
     resave: false,
     saveUninitialized: false,
+    proxy: true,
     cookie: {
       sameSite: "none",
       secure: true,
