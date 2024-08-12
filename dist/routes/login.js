@@ -72,7 +72,6 @@ router.post("/login", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         }
         const token = (0, exports.generateTokens)(user);
         req.session.userId = user.id;
-        console.log(req.session.userId);
         return res.status(200).json({
             message: "Successful",
             token,
