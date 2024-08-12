@@ -25,6 +25,8 @@ const isAuth = (req, res, next) => __awaiter(void 0, void 0, void 0, function* (
     try {
         decoded = jsonwebtoken_1.default.verify(token, process.env.SECRET_KEY);
         if (decoded) {
+            console.log(req.session.userId);
+            console.log(req.session);
             const { id } = decoded;
             if (req.session && req.session.userId === id) {
                 req.userId = req.session.userId;
