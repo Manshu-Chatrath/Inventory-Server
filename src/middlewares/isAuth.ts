@@ -20,8 +20,6 @@ export const isAuth = async (
   try {
     decoded = jwt.verify(token, process.env.SECRET_KEY!);
     if (decoded) {
-      console.log(req.session.userId);
-      console.log(req.session);
       const { id } = decoded as { id: number };
       if (req.session && req.session.userId === id) {
         req.userId = req.session.userId;

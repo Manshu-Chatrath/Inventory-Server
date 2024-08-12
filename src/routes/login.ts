@@ -71,7 +71,7 @@ router.post("/login", async (req: Request, res: Response) => {
     }
     const token = generateTokens(user);
     req.session.userId = user.id;
-    console.log(req.session.userId);
+
     return res.status(200).json({
       message: "Successful",
       token,
