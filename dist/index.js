@@ -24,6 +24,7 @@ app.use((0, express_session_1.default)({
     secret: process.env.SECRET_KEY,
     resave: false,
     saveUninitialized: false,
+    proxy: true,
     cookie: {
         sameSite: "none",
         secure: true,
