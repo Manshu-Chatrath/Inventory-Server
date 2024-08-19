@@ -19,7 +19,8 @@ const email_1 = __importDefault(require("../services/email"));
 const dataBaseError_1 = require("../util/dataBaseError");
 const generateNewOtp_1 = require("../services/generateNewOtp");
 const password_1 = __importDefault(require("../services/password"));
-const isAuth_1 = require("../middlewares/isAuth");
+const clients_1 = __importDefault(require("../models/clients"));
+const cart_1 = __importDefault(require("../models/cart"));
 const supervisors_1 = __importDefault(require("../models/supervisors"));
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
@@ -57,6 +58,44 @@ const verifyOtp = (req, res, model) => __awaiter(void 0, void 0, void 0, functio
             .json({ success: false, message: "Internal Server Error" });
     }
 });
+router.post("/client/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = yield clients_1.default.findOne({
+        where: { email: req.body.email },
+        attributes: ["email", "name", "id"],
+    });
+    if (user) {
+        return res.status(200).send({
+            message: "Successful",
+            client: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                access_token: req.body.access_token,
+                expires_in: req.body.expires_in,
+            },
+        });
+    }
+    else {
+        const client = yield clients_1.default.create({
+            email: req.body.email,
+            name: req.body.name,
+            clientId: req.body.id,
+        });
+        yield cart_1.default.create({
+            client_id: client.id,
+        });
+        return res.status(200).send({
+            message: "Successful",
+            client: {
+                id: client.id,
+                email: client.email,
+                name: client.name,
+                access_token: req.body.access_token,
+                expires_in: req.body.expires_in,
+            },
+        });
+    }
+}));
 router.post("/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = yield supervisors_1.default.findOne({
@@ -71,7 +110,6 @@ router.post("/login", (req, res) => __awaiter(void 0, void 0, void 0, function* 
             return res.status(401).json({ message: "Invalid credentials" });
         }
         const token = (0, exports.generateTokens)(user);
-        req.session.userId = user.id;
         return res.status(200).json({
             message: "Successful",
             token,
@@ -163,12 +201,4 @@ router.post("/verifyOtp", (req, res) => __awaiter(void 0, void 0, void 0, functi
         console.log(e);
         (0, dataBaseError_1.dataBaseConnectionError)(res);
     }
-}));
-router.post("/logout", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    req.session.destroy((err) => {
-        if (err) {
-            return res.status(500).send({ message: "Internal Server Error" });
-        }
-        return res.status(200).send({ message: "Logged out successfully" });
-    });
 }));

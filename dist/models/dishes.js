@@ -11,6 +11,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_typescript_1 = require("sequelize-typescript");
 const extras_1 = __importDefault(require("./extras"));
+const cartItems_1 = __importDefault(require("./cartItems"));
 const categories_1 = __importDefault(require("./categories"));
 const Items_has_dishes_1 = __importDefault(require("./Items_has_dishes"));
 const items_1 = __importDefault(require("./items"));
@@ -118,6 +119,9 @@ __decorate([
 __decorate([
     (0, sequelize_typescript_1.HasMany)(() => extras_1.default)
 ], Dishes.prototype, "extras", void 0);
+__decorate([
+    (0, sequelize_typescript_1.HasMany)(() => cartItems_1.default)
+], Dishes.prototype, "cartItems", void 0);
 Dishes = __decorate([
     (0, sequelize_typescript_1.Table)({
         tableName: "dishes", // Set the table name

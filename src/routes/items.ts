@@ -19,8 +19,8 @@ router.post("/createItem", isAuth, async (req: MyRequest, res: Response) => {
 
     const item = await Items.create({
       name: itemName.toLowerCase(),
-      quantity: +quantity, //+ is used to convert string to number
-      threshold: +threshold, //+ is used to convert string to number
+      quantity: +quantity,
+      threshold: +threshold,
     });
 
     return res.status(200).json({ item: item });

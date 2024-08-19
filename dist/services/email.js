@@ -17,7 +17,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const emailLayout_1 = require("../util/emailLayout");
 dotenv_1.default.config();
 class EmailService {
-    constructor(receiver, otp) {
+    constructor(receiver, otp, orderNumber = "", type = "management") {
         this.sender = "jack.germanshepherd@gmail.com";
         this.sendEmail = () => __awaiter(this, void 0, void 0, function* () {
             const transporter = nodemailer.createTransport({
@@ -27,16 +27,28 @@ class EmailService {
                     pass: process.env.EMAIL_PASSWORD,
                 },
             });
-            yield transporter.sendMail({
-                from: "jack.germanshepherd@gmail.com",
-                to: this.receiver,
-                subject: "OTP",
-                html: (0, emailLayout_1.otpEmailContent)(this.otp),
-            });
+            if (this.type === "client") {
+                yield transporter.sendMail({
+                    from: "jack.germanshepherd@gmail.com",
+                    to: this.receiver,
+                    subject: "Order Confirmation",
+                    html: (0, emailLayout_1.orderEmailContent)(this.orderNumber),
+                });
+            }
+            else {
+                yield transporter.sendMail({
+                    from: "jack.germanshepherd@gmail.com",
+                    to: this.receiver,
+                    subject: "OTP",
+                    html: (0, emailLayout_1.otpEmailContent)(this.otp),
+                });
+            }
             return true;
         });
         this.receiver = receiver;
         this.otp = otp;
+        this.orderNumber = orderNumber;
+        this.type = type;
     }
 }
 exports.default = EmailService;

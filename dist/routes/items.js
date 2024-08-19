@@ -31,8 +31,8 @@ router.post("/createItem", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void
         }
         const item = yield items_1.default.create({
             name: itemName.toLowerCase(),
-            quantity: +quantity, //+ is used to convert string to number
-            threshold: +threshold, //+ is used to convert string to number
+            quantity: +quantity,
+            threshold: +threshold,
         });
         return res.status(200).json({ item: item });
     }

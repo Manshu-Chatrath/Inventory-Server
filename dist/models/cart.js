@@ -10,10 +10,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_typescript_1 = require("sequelize-typescript");
-const extras_1 = __importDefault(require("./extras"));
-const cartItemsExtrasItems_1 = __importDefault(require("./cartItemsExtrasItems"));
+const clients_1 = __importDefault(require("./clients"));
+const cartItems_1 = __importDefault(require("./cartItems"));
 // Define the Client model
-let ExtraItems = class ExtraItems extends sequelize_typescript_1.Model {
+let Cart = class Cart extends sequelize_typescript_1.Model {
 };
 __decorate([
     (0, sequelize_typescript_1.Column)({
@@ -22,33 +22,21 @@ __decorate([
         primaryKey: true,
         allowNull: false,
     })
-], ExtraItems.prototype, "id", void 0);
+], Cart.prototype, "id", void 0);
 __decorate([
-    (0, sequelize_typescript_1.AllowNull)(false),
-    (0, sequelize_typescript_1.Column)({
-        type: sequelize_typescript_1.DataType.STRING,
-    })
-], ExtraItems.prototype, "name", void 0);
-__decorate([
-    (0, sequelize_typescript_1.Column)({
-        type: sequelize_typescript_1.DataType.FLOAT,
-        allowNull: false,
-    })
-], ExtraItems.prototype, "price", void 0);
-__decorate([
-    (0, sequelize_typescript_1.ForeignKey)(() => extras_1.default),
+    (0, sequelize_typescript_1.ForeignKey)(() => clients_1.default),
     (0, sequelize_typescript_1.Column)({
         type: sequelize_typescript_1.DataType.INTEGER,
-        onDelete: "CASCADE",
+        allowNull: false,
     })
-], ExtraItems.prototype, "extraId", void 0);
+], Cart.prototype, "client_id", void 0);
 __decorate([
-    (0, sequelize_typescript_1.HasMany)(() => cartItemsExtrasItems_1.default)
-], ExtraItems.prototype, "cartItems", void 0);
-ExtraItems = __decorate([
+    (0, sequelize_typescript_1.HasMany)(() => cartItems_1.default)
+], Cart.prototype, "cartItems", void 0);
+Cart = __decorate([
     (0, sequelize_typescript_1.Table)({
-        tableName: "extraItems", // Set the table name
+        tableName: "cart", // Set the table name
         timestamps: true, // Add timestamps (createdAt, updatedAt)
     })
-], ExtraItems);
-exports.default = ExtraItems;
+], Cart);
+exports.default = Cart;

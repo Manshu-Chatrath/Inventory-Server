@@ -48,6 +48,7 @@ const database_1 = __importDefault(require("../database"));
 const extraItems_1 = __importDefault(require("../models/extraItems"));
 const Items_has_dishes_1 = __importDefault(require("../models/Items_has_dishes"));
 const items_1 = __importDefault(require("../models/items"));
+const cartItems_1 = __importDefault(require("../models/cartItems"));
 const router = (0, express_1.default)();
 exports.dishesRouter = router;
 router.post("/createDish", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -195,6 +196,11 @@ router.patch("/editDish", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 
                 yield extraItems_1.default.bulkCreate(extraItems, { transaction });
             })));
         }
+        yield cartItems_1.default.update({
+            disable: true,
+        }, {
+            where: { itemId: id },
+        });
         yield transaction.commit();
         return res.status(200).json({ message: "Success" });
     }

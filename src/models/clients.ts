@@ -4,22 +4,22 @@ import {
   Model,
   DataType,
   AllowNull,
+  HasOne,
 } from "sequelize-typescript";
-
-export interface SuperVisorAttrs {
+import Cart from "./cart";
+export interface ClientAttrs {
   id?: number;
-  password: string;
-  otp: string | null;
-  status: string;
-  email: string;
+  clientId: string;
+  email: string | null;
+  name: string;
 }
 
 // Define the Client model
 @Table({
-  tableName: "supervisor", // Set the table name
+  tableName: "clients", // Set the table name
   timestamps: true, // Add timestamps (createdAt, updatedAt)
 })
-class Supervisors extends Model<SuperVisorAttrs> {
+class Clients extends Model<ClientAttrs> {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
@@ -32,19 +32,7 @@ class Supervisors extends Model<SuperVisorAttrs> {
   @Column({
     type: DataType.STRING,
   })
-  password: string;
-
-  @AllowNull(true)
-  @Column({
-    type: DataType.STRING,
-  })
-  status: string;
-
-  @AllowNull(true)
-  @Column({
-    type: DataType.STRING,
-  })
-  otp: string;
+  clientId: string;
 
   @AllowNull(false)
   @Column({
@@ -52,5 +40,14 @@ class Supervisors extends Model<SuperVisorAttrs> {
     unique: true,
   })
   email: string;
+
+  @AllowNull(false)
+  @Column({
+    type: DataType.STRING,
+  })
+  name: string;
+
+  @HasOne(() => Cart)
+  cart: Cart;
 }
-export default Supervisors;
+export default Clients;

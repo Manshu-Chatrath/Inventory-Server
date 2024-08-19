@@ -11,6 +11,7 @@ import sequelize from "../database";
 import ExtraItems from "../models/extraItems";
 import Items_Has_Dishes from "../models/Items_has_dishes";
 import Items from "../models/items";
+import CartItems from "../models/cartItems";
 const router = express();
 router.post("/createDish", isAuth, async (req: MyRequest, res: Response) => {
   const transaction = await sequelize.transaction();
@@ -204,6 +205,14 @@ router.patch("/editDish", isAuth, async (req: MyRequest, res: Response) => {
         })
       );
     }
+    await CartItems.update(
+      {
+        disable: true,
+      },
+      {
+        where: { itemId: id },
+      }
+    );
     await transaction.commit();
     return res.status(200).json({ message: "Success" });
   } catch (e) {

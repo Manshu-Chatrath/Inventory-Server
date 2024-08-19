@@ -9,6 +9,7 @@ import {
   AllowNull,
 } from "sequelize-typescript";
 import Extras from "./extras";
+import CartItems from "./cartItems";
 import Categories from "./categories";
 import Items_Has_Dishes from "./Items_has_dishes";
 import Items from "./items";
@@ -136,5 +137,8 @@ class Dishes extends Model<DishesAttrs> {
 
   @HasMany(() => Extras)
   extras: Extras[];
+
+  @HasMany(() => CartItems)
+  cartItems: CartItems[];
 }
 export default Dishes;

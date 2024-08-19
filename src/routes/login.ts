@@ -4,7 +4,8 @@ import EmailService from "../services/email";
 import { dataBaseConnectionError } from "../util/dataBaseError";
 import { GenerateOtpService } from "../services/generateNewOtp";
 import PasswordService from "../services/password";
-import { isAuth } from "../middlewares/isAuth";
+import Clients from "../models/clients";
+import Cart from "../models/cart";
 import Supervisors, { SuperVisorAttrs } from "../models/supervisors";
 import dotenv from "dotenv";
 dotenv.config();
@@ -52,6 +53,46 @@ const verifyOtp = async (
   }
 };
 
+router.post("/client/login", async (req: Request, res: Response) => {
+  const user = await Clients.findOne({
+    where: { email: req.body.email },
+    attributes: ["email", "name", "id"],
+  });
+
+  if (user) {
+    return res.status(200).send({
+      message: "Successful",
+      client: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        access_token: req.body.access_token,
+        expires_in: req.body.expires_in,
+      },
+    });
+  } else {
+    const client = await Clients.create({
+      email: req.body.email,
+      name: req.body.name,
+      clientId: req.body.id,
+    });
+
+    await Cart.create({
+      client_id: client.id!,
+    });
+    return res.status(200).send({
+      message: "Successful",
+      client: {
+        id: client.id,
+        email: client.email,
+        name: client.name,
+        access_token: req.body.access_token,
+        expires_in: req.body.expires_in,
+      },
+    });
+  }
+});
+
 router.post("/login", async (req: Request, res: Response) => {
   try {
     const user = await Supervisors.findOne({
@@ -70,7 +111,6 @@ router.post("/login", async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
     const token = generateTokens(user);
-    req.session.userId = user.id;
 
     return res.status(200).json({
       message: "Successful",
@@ -175,15 +215,6 @@ router.post("/verifyOtp", async (req: Request, res: Response) => {
     console.log(e);
     dataBaseConnectionError(res);
   }
-});
-
-router.post("/logout", isAuth, async (req: Request, res: Response) => {
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).send({ message: "Internal Server Error" });
-    }
-    return res.status(200).send({ message: "Logged out successfully" });
-  });
 });
 
 export { router as loginRouter };

@@ -3,8 +3,13 @@ import Supervisors from "./models/supervisors";
 import Categories from "./models/categories";
 import Dishes from "./models/dishes";
 import ExtraItems from "./models/extraItems";
+import Clients from "./models/clients";
+import Cart from "./models/cart";
 import Extras from "./models/extras";
 import Items_Has_Dishes from "./models/Items_has_dishes";
+import CartItemsExtras from "./models/cartItemsExtras";
+import CartItemsExtrasItems from "./models/cartItemsExtrasItems";
+import CartItems from "./models/cartItems";
 import Items from "./models/items";
 const sequelize = new Sequelize({
   dialect: "mysql",
@@ -16,9 +21,14 @@ const sequelize = new Sequelize({
   models: [
     Supervisors,
     Categories,
+    CartItemsExtrasItems,
+    CartItemsExtras,
     Items,
+    Clients,
     Dishes,
+    CartItems,
     Items_Has_Dishes,
+    Cart,
     Extras,
     ExtraItems,
   ],

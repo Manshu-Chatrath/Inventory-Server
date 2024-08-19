@@ -1,27 +1,28 @@
 import {
   Table,
   Column,
-  ForeignKey,
-  Model,
-  DataType,
   HasMany,
-  AllowNull,
+  Model,
+  ForeignKey,
+  DataType,
+  BelongsTo,
 } from "sequelize-typescript";
+
+import CartItems from "./cartItems";
 import Extras from "./extras";
 import CartItemsExtrasItems from "./cartItemsExtrasItems";
-export interface ExtraItemsAttrs {
+export interface CartItemsExtrasAttrs {
   id?: number;
-  name: string;
-  price: number;
+  cartItemId: number;
   extraId: number;
 }
 
 // Define the Client model
 @Table({
-  tableName: "extraItems", // Set the table name
+  tableName: "cartItemsExtras", // Set the table name
   timestamps: true, // Add timestamps (createdAt, updatedAt)
 })
-class ExtraItems extends Model<ExtraItemsAttrs> {
+class CartItemsExtras extends Model<CartItemsExtrasAttrs> {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
@@ -30,26 +31,25 @@ class ExtraItems extends Model<ExtraItemsAttrs> {
   })
   id?: number;
 
-  @AllowNull(false)
+  @ForeignKey(() => CartItems)
   @Column({
-    type: DataType.STRING,
-  })
-  name: string;
-
-  @Column({
-    type: DataType.FLOAT,
+    type: DataType.INTEGER,
     allowNull: false,
+    onDelete: "CASCADE",
   })
-  price: number;
+  cartItemId: number;
 
   @ForeignKey(() => Extras)
   @Column({
     type: DataType.INTEGER,
-    onDelete: "CASCADE",
+    allowNull: false,
   })
   extraId: number;
 
   @HasMany(() => CartItemsExtrasItems)
   cartItems: CartItemsExtrasItems[];
+
+  @BelongsTo(() => Extras)
+  extras: Extras;
 }
-export default ExtraItems;
+export default CartItemsExtras;

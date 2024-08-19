@@ -10,10 +10,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_typescript_1 = require("sequelize-typescript");
+const cartItems_1 = __importDefault(require("./cartItems"));
 const extras_1 = __importDefault(require("./extras"));
 const cartItemsExtrasItems_1 = __importDefault(require("./cartItemsExtrasItems"));
 // Define the Client model
-let ExtraItems = class ExtraItems extends sequelize_typescript_1.Model {
+let CartItemsExtras = class CartItemsExtras extends sequelize_typescript_1.Model {
 };
 __decorate([
     (0, sequelize_typescript_1.Column)({
@@ -22,33 +23,32 @@ __decorate([
         primaryKey: true,
         allowNull: false,
     })
-], ExtraItems.prototype, "id", void 0);
+], CartItemsExtras.prototype, "id", void 0);
 __decorate([
-    (0, sequelize_typescript_1.AllowNull)(false),
+    (0, sequelize_typescript_1.ForeignKey)(() => cartItems_1.default),
     (0, sequelize_typescript_1.Column)({
-        type: sequelize_typescript_1.DataType.STRING,
-    })
-], ExtraItems.prototype, "name", void 0);
-__decorate([
-    (0, sequelize_typescript_1.Column)({
-        type: sequelize_typescript_1.DataType.FLOAT,
+        type: sequelize_typescript_1.DataType.INTEGER,
         allowNull: false,
+        onDelete: "CASCADE",
     })
-], ExtraItems.prototype, "price", void 0);
+], CartItemsExtras.prototype, "cartItemId", void 0);
 __decorate([
     (0, sequelize_typescript_1.ForeignKey)(() => extras_1.default),
     (0, sequelize_typescript_1.Column)({
         type: sequelize_typescript_1.DataType.INTEGER,
-        onDelete: "CASCADE",
+        allowNull: false,
     })
-], ExtraItems.prototype, "extraId", void 0);
+], CartItemsExtras.prototype, "extraId", void 0);
 __decorate([
     (0, sequelize_typescript_1.HasMany)(() => cartItemsExtrasItems_1.default)
-], ExtraItems.prototype, "cartItems", void 0);
-ExtraItems = __decorate([
+], CartItemsExtras.prototype, "cartItems", void 0);
+__decorate([
+    (0, sequelize_typescript_1.BelongsTo)(() => extras_1.default)
+], CartItemsExtras.prototype, "extras", void 0);
+CartItemsExtras = __decorate([
     (0, sequelize_typescript_1.Table)({
-        tableName: "extraItems", // Set the table name
+        tableName: "cartItemsExtras", // Set the table name
         timestamps: true, // Add timestamps (createdAt, updatedAt)
     })
-], ExtraItems);
-exports.default = ExtraItems;
+], CartItemsExtras);
+exports.default = CartItemsExtras;

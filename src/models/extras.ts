@@ -9,7 +9,7 @@ import {
 } from "sequelize-typescript";
 import Dishes from "./dishes";
 import ExtraItems from "./extraItems";
-
+import CartItemsExtras from "./cartItemsExtras";
 export interface ExtrasAttrs {
   id?: number;
   name: string;
@@ -53,5 +53,8 @@ class Extras extends Model<ExtrasAttrs> {
 
   @HasMany(() => ExtraItems)
   extras: ExtraItems[];
+
+  @HasMany(() => CartItemsExtras)
+  cartItemsExtras: CartItemsExtras[];
 }
 export default Extras;
