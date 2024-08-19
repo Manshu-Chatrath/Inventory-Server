@@ -203,7 +203,8 @@ router.post("/checkout", clientIsAuth, async (req, res, next) => {
         message: "Order is not valid. Some items in your cart are unavailable.",
       });
     } else {
-      new EmailService(req.body.email, orderNumber);
+      const sendEmail = new EmailService(req.body.email, orderNumber);
+      await sendEmail.sendEmail();
       await CartItems.destroy({
         where: {
           cartId: cart!.id,

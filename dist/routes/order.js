@@ -205,7 +205,8 @@ router.post("/checkout", clientIsAuth_1.clientIsAuth, (req, res, next) => __awai
             });
         }
         else {
-            new email_1.default(req.body.email, orderNumber);
+            const sendEmail = new email_1.default(req.body.email, orderNumber);
+            yield sendEmail.sendEmail();
             yield cartItems_1.default.destroy({
                 where: {
                     cartId: cart.id,
