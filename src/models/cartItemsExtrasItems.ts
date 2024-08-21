@@ -8,10 +8,12 @@ import {
 } from "sequelize-typescript";
 import CartItemsExtras from "./cartItemsExtras";
 import ExtraItems from "./extraItems";
+import CartItems from "./cartItems";
 export interface CartItemsExtrasItemsAttrs {
   id?: number;
   cartItemsExtrasId: number;
   itemsExtraId: number;
+  cartItemId: number;
 }
 
 // Define the Client model
@@ -35,6 +37,14 @@ class CartItemsExtrasItems extends Model<CartItemsExtrasItemsAttrs> {
     onDelete: "CASCADE",
   })
   cartItemsExtrasId: number;
+
+  @ForeignKey(() => CartItems)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    onDelete: "CASCADE",
+  })
+  cartItemId: number;
 
   @BelongsTo(() => ExtraItems)
   extraItems: ExtraItems;

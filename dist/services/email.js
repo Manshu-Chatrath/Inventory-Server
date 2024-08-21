@@ -16,10 +16,12 @@ const nodemailer = require("nodemailer");
 const dotenv_1 = __importDefault(require("dotenv"));
 const emailLayout_1 = require("../util/emailLayout");
 dotenv_1.default.config();
+console.log(process.env.EMAIL_PASSWORD);
 class EmailService {
     constructor(receiver, otp, orderNumber = "", type = "management") {
         this.sender = "jack.germanshepherd@gmail.com";
         this.sendEmail = () => __awaiter(this, void 0, void 0, function* () {
+            console.log(process.env.EMAIL_PASSWORD);
             const transporter = nodemailer.createTransport({
                 service: "gmail",
                 auth: {

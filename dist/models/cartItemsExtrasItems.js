@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_typescript_1 = require("sequelize-typescript");
 const cartItemsExtras_1 = __importDefault(require("./cartItemsExtras"));
 const extraItems_1 = __importDefault(require("./extraItems"));
+const cartItems_1 = __importDefault(require("./cartItems"));
 // Define the Client model
 let CartItemsExtrasItems = class CartItemsExtrasItems extends sequelize_typescript_1.Model {
 };
@@ -31,6 +32,14 @@ __decorate([
         onDelete: "CASCADE",
     })
 ], CartItemsExtrasItems.prototype, "cartItemsExtrasId", void 0);
+__decorate([
+    (0, sequelize_typescript_1.ForeignKey)(() => cartItems_1.default),
+    (0, sequelize_typescript_1.Column)({
+        type: sequelize_typescript_1.DataType.INTEGER,
+        allowNull: false,
+        onDelete: "CASCADE",
+    })
+], CartItemsExtrasItems.prototype, "cartItemId", void 0);
 __decorate([
     (0, sequelize_typescript_1.BelongsTo)(() => extraItems_1.default)
 ], CartItemsExtrasItems.prototype, "extraItems", void 0);

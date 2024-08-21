@@ -15,22 +15,20 @@ const router = express();
 router.post("/addToCart", clientIsAuth, async (req: Request, res: Response) => {
   const transaction = await sequelize.transaction();
   try {
-    const { id, quantity, extras, name = "", price } = req.body;
-    const cart = await Cart.findOne({
-      where: { client_id: req.body.clientId },
-      transaction,
-    });
-    if (!cart) {
-      return res.status(404).send({ message: "Cart not found" });
-    }
-    const cartItem = await CartItems.create({
-      cartId: cart.id ?? 0,
-      itemId: id,
-      quantity: quantity,
-      price: price,
-      name: name,
-      disable: false,
-    });
+    const { id, quantity, extras, name = "", price, cartId } = req.body;
+    const cartItem = await CartItems.create(
+      {
+        cartId: cartId,
+        itemId: id,
+        quantity: quantity,
+        price: price,
+        name: name,
+        disable: false,
+      },
+      { transaction }
+    );
+
+    let totalItems = await getCartLength(cartId);
     const extraItems = extras.map((extra: any) => ({
       extraId: extra.id,
       cartItemId: cartItem.id,
@@ -43,11 +41,11 @@ router.post("/addToCart", clientIsAuth, async (req: Request, res: Response) => {
       const filterCartItemExtra: any = cartItemsExtras.find(
         (c) => c.extraId === extra.id
       );
-
       extra.extraItems.map((itemId: number) => {
         cartItemsExtrasItems.push({
           cartItemsExtrasId: filterCartItemExtra.id,
           itemsExtraId: itemId,
+          cartItemId: cartItem.id,
         });
       });
     });
@@ -56,28 +54,53 @@ router.post("/addToCart", clientIsAuth, async (req: Request, res: Response) => {
       transaction,
     });
     await transaction.commit();
-    return res.status(200).send({ message: "Item added to cart" });
+    return res
+      .status(200)
+      .send({ message: "Item added to cart", cartLength: totalItems });
   } catch (error) {
+    console.log(error);
     await transaction.rollback();
     dataBaseConnectionError(res);
   }
 });
 
+const getCartLength = async (id: number) => {
+  const cartItems = await CartItems.findAll({
+    attributes: ["id", "quantity"],
+    where: {
+      cartId: id,
+    },
+  });
+  let totalItems = 0;
+  cartItems.map((item) => {
+    totalItems += item.quantity;
+  });
+  return totalItems;
+};
+
+router.get(
+  "/cartLength/:id",
+  clientIsAuth,
+  async (req: Request, res: Response) => {
+    try {
+      let totalItems = await getCartLength(+req.params.id);
+      return res
+        .status(200)
+        .send({ message: "Item added to cart", cartLength: totalItems });
+    } catch (e) {
+      console.log(e);
+      dataBaseConnectionError(res);
+    }
+  }
+);
 router.get(
   "/getCart/:id",
   clientIsAuth,
   async (req: Request, res: Response) => {
     const transaction = await sequelize.transaction();
-    const clientId = req.params.id;
     try {
-      const cart = await Cart.findOne({
-        where: { client_id: clientId },
-        transaction,
-      });
-
       let cartItems = await CartItems.findAll({
-        where: { cartId: cart!.id },
-
+        where: { cartId: req.params.id },
         include: [
           {
             model: Dishes,
@@ -140,7 +163,6 @@ router.get(
           extraItems: extraItems,
         });
       });
-
       await transaction.commit();
       return res
         .status(200)
@@ -159,21 +181,20 @@ router.post(
   async (req: Request, res: Response) => {
     const transaction = await sequelize.transaction();
     try {
-      const cart = await Cart.findOne({
-        where: { client_id: req.body.userId },
-        transaction,
-      });
       await CartItems.destroy({
         where: {
           [Op.and]: [
             { id: req.body.id },
-            { cartId: cart!.id }, // Use Op.in for bulk operation
+            { cartId: req.body.cartId }, // Use Op.in for bulk operation
           ],
         },
         transaction,
       });
+      let totalItems = await getCartLength(req.body.cartId);
       await transaction.commit();
-      return res.status(200).send({ message: "Item removed from cart" });
+      return res
+        .status(200)
+        .send({ message: "Item removed from cart", cartLength: totalItems });
     } catch (error) {
       console.log(error);
       await transaction.rollback();
@@ -188,13 +209,12 @@ function generateOrderNumber() {
   return `ORD-${timestamp}-${randomNum}`;
 }
 
-router.post("/checkout", clientIsAuth, async (req, res, next) => {
+router.post("/checkout", clientIsAuth, async (req: Request, res: Response) => {
   try {
-    const cart = await Cart.findOne({ where: { client_id: req.body.userId } });
     const orderNumber = generateOrderNumber();
     const cartItems = await CartItems.findAll({
       where: {
-        cartId: cart!.id,
+        cartId: req.body.cartId,
       },
     });
     const notValid = cartItems.find((item) => item.disable === true);
@@ -207,7 +227,7 @@ router.post("/checkout", clientIsAuth, async (req, res, next) => {
       await sendEmail.sendEmail();
       await CartItems.destroy({
         where: {
-          cartId: cart!.id,
+          cartId: req.body.cartId,
         },
       });
       return res
@@ -215,6 +235,136 @@ router.post("/checkout", clientIsAuth, async (req, res, next) => {
         .json({ message: "Order processed successfully", orderNumber });
     }
   } catch (e) {
+    console.log(e);
+    dataBaseConnectionError(res);
+  }
+});
+
+router.put("/editCartItem", async (req: Request, res: Response) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const { cartItemId, price, quantity, extras } = req.body;
+    await CartItems.update(
+      {
+        quantity: quantity,
+        price: price,
+      },
+      { where: { id: cartItemId }, transaction }
+    );
+
+    if (extras.length === 0) {
+      await CartItemsExtras.destroy({
+        where: { cartItemId: cartItemId },
+        transaction,
+      });
+    } else {
+      const allExtraItems = await CartItemsExtras.findAll({
+        where: { cartItemId: cartItemId },
+        attributes: ["extraId", "id"],
+        include: [
+          {
+            model: CartItemsExtrasItems,
+          },
+        ],
+      });
+
+      let extraItemsIds = extras.map((e: any) => e.id);
+      let existingItemsIds: number[] = [];
+      let removeIds: number[] = [];
+      allExtraItems?.map((item) => {
+        if (!extraItemsIds.includes(item.extraId)) {
+          removeIds.push(item.extraId);
+        } else {
+          existingItemsIds.push(item.extraId);
+          extraItemsIds = extraItemsIds.filter(
+            (e: number) => e !== item.extraId
+          );
+        }
+      });
+      if (removeIds.length > 0) {
+        await CartItemsExtras.destroy({
+          where: {
+            [Op.and]: {
+              extraId: {
+                [Op.in]: removeIds,
+              },
+              cartItemId: cartItemId,
+            },
+          },
+          transaction,
+        });
+      }
+
+      if (extraItemsIds.length > 0) {
+        let obj = extraItemsIds.map((e: any) => {
+          return {
+            extraId: e,
+            cartItemId: cartItemId,
+          };
+        });
+        const newCartItemsExtras = await CartItemsExtras.bulkCreate(obj, {
+          transaction,
+        });
+
+        let cartItemsExtrasItems: any[] = [];
+        extras.map((extra: any) => {
+          const filterCartItemExtra: any = newCartItemsExtras.find(
+            (c) => c.extraId === extra.id
+          );
+          extra.extraItems.map((itemId: number) => {
+            cartItemsExtrasItems.push({
+              cartItemsExtrasId: filterCartItemExtra.id,
+              itemsExtraId: itemId,
+              cartItemId: cartItemId,
+            });
+          });
+        });
+        await CartItemsExtrasItems.bulkCreate(cartItemsExtrasItems, {
+          transaction,
+        });
+      }
+      if (existingItemsIds.length > 0) {
+        const bulkCartItemsExtrasItems: any[] = [];
+
+        await Promise.all(
+          extras.map(async (e: any) => {
+            if (existingItemsIds.includes(e.id)) {
+              const filterCartItemExtra: any = allExtraItems.find(
+                (c) => c.extraId === e.id
+              );
+
+              const cartItemsExtrasItems = e.extraItems.map(
+                (itemId: number) => ({
+                  cartItemsExtrasId: filterCartItemExtra.id,
+                  itemsExtraId: itemId,
+                  cartItemId: cartItemId,
+                })
+              );
+              bulkCartItemsExtrasItems.push(...cartItemsExtrasItems);
+
+              await CartItemsExtrasItems.destroy({
+                where: {
+                  cartItemId: cartItemId,
+                  cartItemsExtrasId: filterCartItemExtra.id,
+                },
+                transaction,
+              });
+            }
+          })
+        );
+
+        if (bulkCartItemsExtrasItems.length > 0) {
+          await CartItemsExtrasItems.bulkCreate(bulkCartItemsExtrasItems, {
+            transaction,
+          });
+        }
+      }
+    }
+    await transaction.commit();
+    return res.status(200).json({ message: "Order processed successfully" });
+  } catch (e) {
+    console.log(e);
+    await transaction.rollback();
     dataBaseConnectionError(res);
   }
 });

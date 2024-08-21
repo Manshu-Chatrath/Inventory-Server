@@ -9,7 +9,7 @@ export interface MyRequest extends Request {
 async function verifyToken(token: string) {
   try {
     const response = await axios.get(
-      `https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${token}`
+      `https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${token}`
     );
     if (response.data.access_type !== "online") {
       return false;

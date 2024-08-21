@@ -63,12 +63,14 @@ router.post("/client/login", (req, res) => __awaiter(void 0, void 0, void 0, fun
         where: { email: req.body.email },
         attributes: ["email", "name", "id"],
     });
+    const cart = yield cart_1.default.findOne({ where: { client_id: user === null || user === void 0 ? void 0 : user.id } });
     if (user) {
         return res.status(200).send({
             message: "Successful",
             client: {
                 id: user.id,
                 email: user.email,
+                cartId: cart === null || cart === void 0 ? void 0 : cart.id,
                 name: user.name,
                 access_token: req.body.access_token,
                 expires_in: req.body.expires_in,
@@ -81,7 +83,7 @@ router.post("/client/login", (req, res) => __awaiter(void 0, void 0, void 0, fun
             name: req.body.name,
             clientId: req.body.id,
         });
-        yield cart_1.default.create({
+        const cart = yield cart_1.default.create({
             client_id: client.id,
         });
         return res.status(200).send({
@@ -89,6 +91,7 @@ router.post("/client/login", (req, res) => __awaiter(void 0, void 0, void 0, fun
             client: {
                 id: client.id,
                 email: client.email,
+                cartId: cart === null || cart === void 0 ? void 0 : cart.id,
                 name: client.name,
                 access_token: req.body.access_token,
                 expires_in: req.body.expires_in,

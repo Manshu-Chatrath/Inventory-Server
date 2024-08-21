@@ -13,6 +13,7 @@ const sequelize_typescript_1 = require("sequelize-typescript");
 const dishes_1 = __importDefault(require("./dishes"));
 const cart_1 = __importDefault(require("./cart"));
 const cartItemsExtras_1 = __importDefault(require("./cartItemsExtras"));
+const cartItemsExtrasItems_1 = __importDefault(require("./cartItemsExtrasItems"));
 // Define the Client model
 let CartItems = class CartItems extends sequelize_typescript_1.Model {
 };
@@ -68,6 +69,9 @@ __decorate([
 __decorate([
     (0, sequelize_typescript_1.HasMany)(() => cartItemsExtras_1.default)
 ], CartItems.prototype, "cartItemsExtras", void 0);
+__decorate([
+    (0, sequelize_typescript_1.HasMany)(() => cartItemsExtrasItems_1.default)
+], CartItems.prototype, "cartItemsExtraItemss", void 0);
 CartItems = __decorate([
     (0, sequelize_typescript_1.Table)({
         tableName: "cartItems", // Set the table name

@@ -17,7 +17,7 @@ const axios_1 = __importDefault(require("axios"));
 function verifyToken(token) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const response = yield axios_1.default.get(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${token}`);
+            const response = yield axios_1.default.get(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${token}`);
             if (response.data.access_type !== "online") {
                 return false;
             }

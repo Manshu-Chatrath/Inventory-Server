@@ -58,13 +58,14 @@ router.post("/client/login", async (req: Request, res: Response) => {
     where: { email: req.body.email },
     attributes: ["email", "name", "id"],
   });
-
+  const cart = await Cart.findOne({ where: { client_id: user?.id } });
   if (user) {
     return res.status(200).send({
       message: "Successful",
       client: {
         id: user.id,
         email: user.email,
+        cartId: cart?.id,
         name: user.name,
         access_token: req.body.access_token,
         expires_in: req.body.expires_in,
@@ -77,7 +78,7 @@ router.post("/client/login", async (req: Request, res: Response) => {
       clientId: req.body.id,
     });
 
-    await Cart.create({
+    const cart = await Cart.create({
       client_id: client.id!,
     });
     return res.status(200).send({
@@ -85,6 +86,7 @@ router.post("/client/login", async (req: Request, res: Response) => {
       client: {
         id: client.id,
         email: client.email,
+        cartId: cart?.id,
         name: client.name,
         access_token: req.body.access_token,
         expires_in: req.body.expires_in,

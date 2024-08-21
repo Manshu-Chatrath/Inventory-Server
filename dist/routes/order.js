@@ -15,7 +15,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.orderRouter = void 0;
 const express_1 = __importDefault(require("express"));
 const clientIsAuth_1 = require("../middlewares/clientIsAuth");
-const cart_1 = __importDefault(require("../models/cart"));
 const cartItems_1 = __importDefault(require("../models/cartItems"));
 const cartItemsExtras_1 = __importDefault(require("../models/cartItemsExtras"));
 const cartItemsExtrasItems_1 = __importDefault(require("../models/cartItemsExtrasItems"));
@@ -29,25 +28,18 @@ const dataBaseError_1 = require("../util/dataBaseError");
 const router = (0, express_1.default)();
 exports.orderRouter = router;
 router.post("/addToCart", clientIsAuth_1.clientIsAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     const transaction = yield database_1.default.transaction();
     try {
-        const { id, quantity, extras, name = "", price } = req.body;
-        const cart = yield cart_1.default.findOne({
-            where: { client_id: req.body.clientId },
-            transaction,
-        });
-        if (!cart) {
-            return res.status(404).send({ message: "Cart not found" });
-        }
+        const { id, quantity, extras, name = "", price, cartId } = req.body;
         const cartItem = yield cartItems_1.default.create({
-            cartId: (_a = cart.id) !== null && _a !== void 0 ? _a : 0,
+            cartId: cartId,
             itemId: id,
             quantity: quantity,
             price: price,
             name: name,
             disable: false,
-        });
+        }, { transaction });
+        let totalItems = yield getCartLength(cartId);
         const extraItems = extras.map((extra) => ({
             extraId: extra.id,
             cartItemId: cartItem.id,
@@ -62,6 +54,7 @@ router.post("/addToCart", clientIsAuth_1.clientIsAuth, (req, res) => __awaiter(v
                 cartItemsExtrasItems.push({
                     cartItemsExtrasId: filterCartItemExtra.id,
                     itemsExtraId: itemId,
+                    cartItemId: cartItem.id,
                 });
             });
         });
@@ -69,23 +62,46 @@ router.post("/addToCart", clientIsAuth_1.clientIsAuth, (req, res) => __awaiter(v
             transaction,
         });
         yield transaction.commit();
-        return res.status(200).send({ message: "Item added to cart" });
+        return res
+            .status(200)
+            .send({ message: "Item added to cart", cartLength: totalItems });
     }
     catch (error) {
+        console.log(error);
         yield transaction.rollback();
+        (0, dataBaseError_1.dataBaseConnectionError)(res);
+    }
+}));
+const getCartLength = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    const cartItems = yield cartItems_1.default.findAll({
+        attributes: ["id", "quantity"],
+        where: {
+            cartId: id,
+        },
+    });
+    let totalItems = 0;
+    cartItems.map((item) => {
+        totalItems += item.quantity;
+    });
+    return totalItems;
+});
+router.get("/cartLength/:id", clientIsAuth_1.clientIsAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        let totalItems = yield getCartLength(+req.params.id);
+        return res
+            .status(200)
+            .send({ message: "Item added to cart", cartLength: totalItems });
+    }
+    catch (e) {
+        console.log(e);
         (0, dataBaseError_1.dataBaseConnectionError)(res);
     }
 }));
 router.get("/getCart/:id", clientIsAuth_1.clientIsAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const transaction = yield database_1.default.transaction();
-    const clientId = req.params.id;
     try {
-        const cart = yield cart_1.default.findOne({
-            where: { client_id: clientId },
-            transaction,
-        });
         let cartItems = yield cartItems_1.default.findAll({
-            where: { cartId: cart.id },
+            where: { cartId: req.params.id },
             include: [
                 {
                     model: dishes_1.default,
@@ -162,21 +178,20 @@ router.get("/getCart/:id", clientIsAuth_1.clientIsAuth, (req, res) => __awaiter(
 router.post("/deleteCartItem", clientIsAuth_1.clientIsAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const transaction = yield database_1.default.transaction();
     try {
-        const cart = yield cart_1.default.findOne({
-            where: { client_id: req.body.userId },
-            transaction,
-        });
         yield cartItems_1.default.destroy({
             where: {
                 [sequelize_1.Op.and]: [
                     { id: req.body.id },
-                    { cartId: cart.id }, // Use Op.in for bulk operation
+                    { cartId: req.body.cartId }, // Use Op.in for bulk operation
                 ],
             },
             transaction,
         });
+        let totalItems = yield getCartLength(req.body.cartId);
         yield transaction.commit();
-        return res.status(200).send({ message: "Item removed from cart" });
+        return res
+            .status(200)
+            .send({ message: "Item removed from cart", cartLength: totalItems });
     }
     catch (error) {
         console.log(error);
@@ -189,13 +204,12 @@ function generateOrderNumber() {
     const randomNum = Math.floor(Math.random() * 100000);
     return `ORD-${timestamp}-${randomNum}`;
 }
-router.post("/checkout", clientIsAuth_1.clientIsAuth, (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+router.post("/checkout", clientIsAuth_1.clientIsAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const cart = yield cart_1.default.findOne({ where: { client_id: req.body.userId } });
         const orderNumber = generateOrderNumber();
         const cartItems = yield cartItems_1.default.findAll({
             where: {
-                cartId: cart.id,
+                cartId: req.body.cartId,
             },
         });
         const notValid = cartItems.find((item) => item.disable === true);
@@ -209,7 +223,7 @@ router.post("/checkout", clientIsAuth_1.clientIsAuth, (req, res, next) => __awai
             yield sendEmail.sendEmail();
             yield cartItems_1.default.destroy({
                 where: {
-                    cartId: cart.id,
+                    cartId: req.body.cartId,
                 },
             });
             return res
@@ -218,6 +232,117 @@ router.post("/checkout", clientIsAuth_1.clientIsAuth, (req, res, next) => __awai
         }
     }
     catch (e) {
+        console.log(e);
+        (0, dataBaseError_1.dataBaseConnectionError)(res);
+    }
+}));
+router.put("/editCartItem", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const transaction = yield database_1.default.transaction();
+    try {
+        const { cartItemId, price, quantity, extras } = req.body;
+        yield cartItems_1.default.update({
+            quantity: quantity,
+            price: price,
+        }, { where: { id: cartItemId }, transaction });
+        if (extras.length === 0) {
+            yield cartItemsExtras_1.default.destroy({
+                where: { cartItemId: cartItemId },
+                transaction,
+            });
+        }
+        else {
+            const allExtraItems = yield cartItemsExtras_1.default.findAll({
+                where: { cartItemId: cartItemId },
+                attributes: ["extraId", "id"],
+                include: [
+                    {
+                        model: cartItemsExtrasItems_1.default,
+                    },
+                ],
+            });
+            let extraItemsIds = extras.map((e) => e.id);
+            let existingItemsIds = [];
+            let removeIds = [];
+            allExtraItems === null || allExtraItems === void 0 ? void 0 : allExtraItems.map((item) => {
+                if (!extraItemsIds.includes(item.extraId)) {
+                    removeIds.push(item.extraId);
+                }
+                else {
+                    existingItemsIds.push(item.extraId);
+                    extraItemsIds = extraItemsIds.filter((e) => e !== item.extraId);
+                }
+            });
+            if (removeIds.length > 0) {
+                yield cartItemsExtras_1.default.destroy({
+                    where: {
+                        [sequelize_1.Op.and]: {
+                            extraId: {
+                                [sequelize_1.Op.in]: removeIds,
+                            },
+                            cartItemId: cartItemId,
+                        },
+                    },
+                    transaction,
+                });
+            }
+            if (extraItemsIds.length > 0) {
+                let obj = extraItemsIds.map((e) => {
+                    return {
+                        extraId: e,
+                        cartItemId: cartItemId,
+                    };
+                });
+                const newCartItemsExtras = yield cartItemsExtras_1.default.bulkCreate(obj, {
+                    transaction,
+                });
+                let cartItemsExtrasItems = [];
+                extras.map((extra) => {
+                    const filterCartItemExtra = newCartItemsExtras.find((c) => c.extraId === extra.id);
+                    extra.extraItems.map((itemId) => {
+                        cartItemsExtrasItems.push({
+                            cartItemsExtrasId: filterCartItemExtra.id,
+                            itemsExtraId: itemId,
+                            cartItemId: cartItemId,
+                        });
+                    });
+                });
+                yield cartItemsExtrasItems_1.default.bulkCreate(cartItemsExtrasItems, {
+                    transaction,
+                });
+            }
+            if (existingItemsIds.length > 0) {
+                const bulkCartItemsExtrasItems = [];
+                yield Promise.all(extras.map((e) => __awaiter(void 0, void 0, void 0, function* () {
+                    if (existingItemsIds.includes(e.id)) {
+                        const filterCartItemExtra = allExtraItems.find((c) => c.extraId === e.id);
+                        const cartItemsExtrasItems = e.extraItems.map((itemId) => ({
+                            cartItemsExtrasId: filterCartItemExtra.id,
+                            itemsExtraId: itemId,
+                            cartItemId: cartItemId,
+                        }));
+                        bulkCartItemsExtrasItems.push(...cartItemsExtrasItems);
+                        yield cartItemsExtrasItems_1.default.destroy({
+                            where: {
+                                cartItemId: cartItemId,
+                                cartItemsExtrasId: filterCartItemExtra.id,
+                            },
+                            transaction,
+                        });
+                    }
+                })));
+                if (bulkCartItemsExtrasItems.length > 0) {
+                    yield cartItemsExtrasItems_1.default.bulkCreate(bulkCartItemsExtrasItems, {
+                        transaction,
+                    });
+                }
+            }
+        }
+        yield transaction.commit();
+        return res.status(200).json({ message: "Order processed successfully" });
+    }
+    catch (e) {
+        console.log(e);
+        yield transaction.rollback();
         (0, dataBaseError_1.dataBaseConnectionError)(res);
     }
 }));

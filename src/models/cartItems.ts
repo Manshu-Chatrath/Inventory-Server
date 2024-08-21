@@ -11,6 +11,7 @@ import Dishes from "./dishes";
 import Cart from "./cart";
 import CartItemsExtras from "./cartItemsExtras";
 import { bool } from "aws-sdk/clients/signer";
+import CartItemsExtrasItems from "./cartItemsExtrasItems";
 
 export interface CartItemsAttrs {
   id?: number;
@@ -79,5 +80,8 @@ class CartItems extends Model<CartItemsAttrs> {
 
   @HasMany(() => CartItemsExtras)
   cartItemsExtras: CartItemsExtras[];
+
+  @HasMany(() => CartItemsExtrasItems)
+  cartItemsExtraItemss: CartItemsExtrasItems[];
 }
 export default CartItems;
