@@ -239,7 +239,7 @@ router.post("/checkout", clientIsAuth_1.clientIsAuth, (req, res) => __awaiter(vo
 router.put("/editCartItem", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const transaction = yield database_1.default.transaction();
     try {
-        const { cartItemId, price, quantity, extras } = req.body;
+        const { cartItemId, price, quantity, extras, cartId } = req.body;
         yield cartItems_1.default.update({
             quantity: quantity,
             price: price,
@@ -338,7 +338,11 @@ router.put("/editCartItem", (req, res) => __awaiter(void 0, void 0, void 0, func
             }
         }
         yield transaction.commit();
-        return res.status(200).json({ message: "Order processed successfully" });
+        let totalItems = yield getCartLength(cartId);
+        return res.status(200).json({
+            message: "Order processed successfully",
+            cartLength: totalItems,
+        });
     }
     catch (e) {
         console.log(e);

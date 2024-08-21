@@ -243,7 +243,7 @@ router.post("/checkout", clientIsAuth, async (req: Request, res: Response) => {
 router.put("/editCartItem", async (req: Request, res: Response) => {
   const transaction = await sequelize.transaction();
   try {
-    const { cartItemId, price, quantity, extras } = req.body;
+    const { cartItemId, price, quantity, extras, cartId } = req.body;
     await CartItems.update(
       {
         quantity: quantity,
@@ -361,7 +361,11 @@ router.put("/editCartItem", async (req: Request, res: Response) => {
       }
     }
     await transaction.commit();
-    return res.status(200).json({ message: "Order processed successfully" });
+    let totalItems = await getCartLength(cartId);
+    return res.status(200).json({
+      message: "Order processed successfully",
+      cartLength: totalItems,
+    });
   } catch (e) {
     console.log(e);
     await transaction.rollback();
