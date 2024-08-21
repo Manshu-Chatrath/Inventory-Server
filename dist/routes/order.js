@@ -39,7 +39,6 @@ router.post("/addToCart", clientIsAuth_1.clientIsAuth, (req, res) => __awaiter(v
             name: name,
             disable: false,
         }, { transaction });
-        let totalItems = yield getCartLength(cartId);
         const extraItems = extras.map((extra) => ({
             extraId: extra.id,
             cartItemId: cartItem.id,
@@ -62,6 +61,7 @@ router.post("/addToCart", clientIsAuth_1.clientIsAuth, (req, res) => __awaiter(v
             transaction,
         });
         yield transaction.commit();
+        let totalItems = yield getCartLength(cartId);
         return res
             .status(200)
             .send({ message: "Item added to cart", cartLength: totalItems });

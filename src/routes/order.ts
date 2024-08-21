@@ -28,7 +28,6 @@ router.post("/addToCart", clientIsAuth, async (req: Request, res: Response) => {
       { transaction }
     );
 
-    let totalItems = await getCartLength(cartId);
     const extraItems = extras.map((extra: any) => ({
       extraId: extra.id,
       cartItemId: cartItem.id,
@@ -54,6 +53,7 @@ router.post("/addToCart", clientIsAuth, async (req: Request, res: Response) => {
       transaction,
     });
     await transaction.commit();
+    let totalItems = await getCartLength(cartId);
     return res
       .status(200)
       .send({ message: "Item added to cart", cartLength: totalItems });
